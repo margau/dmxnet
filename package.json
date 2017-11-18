@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/margau/dmxnet/issues"
   },
-  "homepage": "https://github.com/margau/dmxnet#readme"
+  "homepage": "https://github.com/margau/dmxnet#readme",
+  "dependencies": {
+    "jspack": "0.0.4"
+  }
 }
