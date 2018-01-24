@@ -33,7 +33,7 @@ sender=function (options,parent){
 	this.subnet=options.subnet || 0;
 	this.universe=options.universe || 0;
 	this.ip=options.ip || "255.255.255.255";
-    this.port=options.port || 6545; 
+    this.port=options.port || 6454; 
     this.verbose=this.parent.verbose;
 	
 	if(this.verbose>0) {
@@ -91,7 +91,7 @@ sender.prototype.transmit = function () {
 
 
 };
-//Sender destroy         this.socket.close();, stop Interval
+//ToDo: Sender destroy         this.socket.close();, stop Interval
 //ToDo: Receiver
 //Export dmxnet
 module.exports = {dmxnet};
