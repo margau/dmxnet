@@ -2,7 +2,7 @@ var dgram = require('dgram');
 var jspack = require('jspack').jspack;
 
 // ArtDMX Header for jspack
-var ArtDmxHeaderFormat = '!7sBHHBBHH';
+var ArtDmxHeaderFormat = '!7sBHHBBBBH';
 // ArtDMX Payload for jspack
 var ArtDmxPayloadFormat = '512B';
 
@@ -35,7 +35,15 @@ sender=function (options,parent){
 	this.ip=options.ip || "255.255.255.255";
     this.port=options.port || 6454; 
     this.verbose=this.parent.verbose;
-	
+	if(this.net>127) {
+        throw "Invalid Net, must be smaller than 128";
+    }
+	if(this.universe>15) {
+        throw "Invalid Universe, must be smaller than 16";
+    }
+    if(this.subnet>15) {
+        throw "Invalid subnet, must be smaller than 16";
+    }
 	if(this.verbose>0) {
 		console.log("new dmxnet sender started with params: "+JSON.stringify(options));
 	}
@@ -46,7 +54,8 @@ sender=function (options,parent){
 		this.values[i]=0;
 	}
 	//ToDo: Build Subnet/Universe/Net Int16
-    
+    this.subuni=(this.subnet<<4)|(this.universe);
+    console.log(this.subuni.toString(16));
     //ArtDmxSeq
     this.ArtDmxSeq=1;
 
@@ -69,7 +78,7 @@ sender.prototype.transmit = function () {
 		this.ArtDmxSeq=1;
 	}
 	//Build Package: ID Int8[8], OpCode Int16 0x5000 (conv. to 0x0050), ProtVer Int16, Sequence Int8, PhysicalPort Int8, SubnetUniverseNet Int16, Length Int16 
-	var udpPackage=new Buffer(jspack.Pack(ArtDmxHeaderFormat+ArtDmxPayloadFormat,["Art-Net",0,0x0050,14,this.ArtDmxSeq,0,0,512].concat(this.values)));
+	var udpPackage=new Buffer(jspack.Pack(ArtDmxHeaderFormat+ArtDmxPayloadFormat,["Art-Net",0,0x0050,14,this.ArtDmxSeq,0,this.subuni,this.net,512].concat(this.values)));
     //Increase Sequence Counter    
     this.ArtDmxSeq++;
 
@@ -77,7 +86,7 @@ sender.prototype.transmit = function () {
         console.log("Transmitting frame");
     }
     if(this.verbose>2) {
-        console.log(JSON.stringify(udpPackage));
+        console.log(udpPackage.toString('hex'));
     }
     //Send UDP
     var client=this.socket;
