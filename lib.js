@@ -5,8 +5,7 @@ var jspack = require('jspack').jspack;
 var ArtDmxHeaderFormat = '!7sBHHBBHH';
 // ArtDMX Payload for jspack
 var ArtDmxPayloadFormat = '512B';
-//ArtDMX Sequence Counter
-var ArtDmxSeq=1;
+
 
 //dmxnet constructor
 function dmxnet(options) {
@@ -47,6 +46,12 @@ sender=function (options,parent){
 		this.values[i]=0;
 	}
 	//ToDo: Build Subnet/Universe/Net Int16
+    
+    //ArtDmxSeq
+    this.ArtDmxSeq=1;
+
+    //Create Socket
+    this.socket=dgram.createSocket('udp4');
 
     //Transmit first Frame
 	this.transmit();
@@ -60,22 +65,33 @@ sender=function (options,parent){
 }
 //Transmit function
 sender.prototype.transmit = function () {
-	if(ArtDmxSeq>=255) {
-		ArtDmxSeq=1;
+	if(this.ArtDmxSeq>255) {
+		this.ArtDmxSeq=1;
 	}
-	//Build Package: ID Int8[8], OpCode Int16, ProtVer Int16, Sequence Int8, PhysicalPort Int8, SubnetUniverseNet Int16, Length Int16 
-	var udpPackage=jspack.Pack(ArtDmxHeaderFormat+ArtDmxPayloadFormat,["Art-Net",0,20480,14,ArtDmxSeq,0,0,512]);
-    //ToDo: Finish Build Package    
-    //ToDo: Send UDP
+	//Build Package: ID Int8[8], OpCode Int16 0x5000 (conv. to 0x0050), ProtVer Int16, Sequence Int8, PhysicalPort Int8, SubnetUniverseNet Int16, Length Int16 
+	var udpPackage=new Buffer(jspack.Pack(ArtDmxHeaderFormat+ArtDmxPayloadFormat,["Art-Net",0,0x0050,14,this.ArtDmxSeq,0,0,512].concat(this.values)));
+    //Increase Sequence Counter    
+    this.ArtDmxSeq++;
 
     if(this.verbose>1) {
-        console.log("Transmit");
+        console.log("Transmitting frame");
     }
     if(this.verbose>2) {
-        console.log(udpPackage);
+        console.log(JSON.stringify(udpPackage));
     }
-};
+    //Send UDP
+    var client=this.socket;
+    _this=this;
+    client.send(udpPackage, 0, udpPackage.length, this.port, this.ip, function(err, bytes) {
+        if (err) throw err;
+        if(_this.verbose>1) {
+            console.log('ArtDMX frame sent to ' + _this.ip +':'+ _this.port);
+        }
+    });
 
+
+};
+//Sender destroy         this.socket.close();, stop Interval
 //ToDo: Receiver
 //Export dmxnet
 module.exports = {dmxnet};
