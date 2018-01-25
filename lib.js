@@ -27,6 +27,8 @@ dmxnet.prototype.newSender=function(options) {
 sender=function (options,parent){
     //save parent object
     this.parent=parent;
+
+    this.socket_ready=false;
     //set options
 	var options = options || {};
 	this.net=options.net || 0;
@@ -35,9 +37,6 @@ sender=function (options,parent){
 	this.ip=options.ip || "255.255.255.255";
     this.port=options.port || 6454; 
     this.verbose=this.parent.verbose;
-    //ToDo: Validate IP
-    //ToDo: Broadcast Flag
-
     //Validate Input
 	if(this.net>127) {
         throw "Invalid Net, must be smaller than 128";
@@ -67,7 +66,17 @@ sender=function (options,parent){
 
     //Create Socket
     this.socket=dgram.createSocket('udp4');
-
+    _this=this;
+    //Check IP and Broadcast
+    if(isBroadcast(this.ip)) {
+        this.socket.bind(function() {
+            _this.socket.setBroadcast(true);
+            _this.socket_ready=true;
+        });
+        
+    } else {
+        this.socket_ready=true;
+    }
     //Transmit first Frame
 	this.transmit();
     
@@ -80,31 +89,32 @@ sender=function (options,parent){
 }
 //Transmit function
 sender.prototype.transmit = function () {
-	if(this.ArtDmxSeq>255) {
-		this.ArtDmxSeq=1;
-	}
-	//Build packet: ID Int8[8], OpCode Int16 0x5000 (conv. to 0x0050), ProtVer Int16, Sequence Int8, PhysicalPort Int8, SubnetUniverseNet Int16, Length Int16 
-	var udppacket=new Buffer(jspack.Pack(ArtDmxHeaderFormat+ArtDmxPayloadFormat,["Art-Net",0,0x0050,14,this.ArtDmxSeq,0,this.subuni,this.net,512].concat(this.values)));
-    //Increase Sequence Counter    
-    this.ArtDmxSeq++;
+    //Only transmit if socket is ready
+	if(this.socket_ready) {
+        if(this.ArtDmxSeq>255) {
+		    this.ArtDmxSeq=1;
+	    }
+	    //Build packet: ID Int8[8], OpCode Int16 0x5000 (conv. to 0x0050), ProtVer Int16, Sequence Int8, PhysicalPort Int8, SubnetUniverseNet Int16, Length Int16 
+	    var udppacket=new Buffer(jspack.Pack(ArtDmxHeaderFormat+ArtDmxPayloadFormat,["Art-Net",0,0x0050,14,this.ArtDmxSeq,0,this.subuni,this.net,512].concat(this.values)));
+        //Increase Sequence Counter    
+        this.ArtDmxSeq++;
 
-    if(this.verbose>1) {
-        console.log("Transmitting frame");
-    }
-    if(this.verbose>2) {
-        console.log(udppacket.toString('hex'));
-    }
-    //Send UDP
-    var client=this.socket;
-    _this=this;
-    client.send(udppacket, 0, udppacket.length, this.port, this.ip, function(err, bytes) {
-        if (err) throw err;
-        if(_this.verbose>1) {
-            console.log('ArtDMX frame sent to ' + _this.ip +':'+ _this.port);
+        if(this.verbose>1) {
+            console.log("Transmitting frame");
         }
-    });
-
-
+        if(this.verbose>2) {
+            console.log(udppacket.toString('hex'));
+        }
+        //Send UDP
+        var client=this.socket;
+        _this=this;
+        client.send(udppacket, 0, udppacket.length, this.port, this.ip, function(err, bytes) {
+            if (err) throw err;
+            if(_this.verbose>1) {
+                console.log('ArtDMX frame sent to ' + _this.ip +':'+ _this.port);
+            }
+        });
+    }
 };
 //SetChannel function
 sender.prototype.setChannel = function (channel, value) {
@@ -142,7 +152,21 @@ sender.prototype.stop = function() {
     clearInterval(this.interval);
     this.socket.close();
 };
-
+function isBroadcast(ipaddress) {
+	var oct=ipaddress.split('.');
+	if(oct.length!=4) {
+		throw "Wrong IPv4 lenght";
+	}
+	for(var i=0;i<4;i++) {
+		if((parseInt(oct[i])>255)||(parseInt(oct[i])<0)) {
+			throw "Invalid IP (Octet "+(i+1)+")";
+		}
+	}
+	if(oct[3]=='255') {
+		return true;
+	}
+	return false;
+}
 //ToDo: Receiver
 //Export dmxnet
 module.exports = {dmxnet};
