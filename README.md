@@ -55,4 +55,14 @@ Sets channel (0-511) to value (0-255) and transmits the changed values .
 
 **Please Note: dmxnet transmits an frame every 1000ms even if no channel has changed its value!**
 
+## ToDo:
+
+- Receiving ArtDmx
+- Receiving ArtPoll
+- Sending ArtPollReply
+- Act as Controller (Sending ArtPollReply)
+- Maybe support sACN?
+
+##Credits
+
 **Art-Net™ Designed by and Copyright Artistic Licence Holdings Ltd**
