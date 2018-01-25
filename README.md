@@ -10,6 +10,8 @@ currently under heavy development!
 
 ## Usage
 
+**See example_rx.js and example_tx.js**
+
 **Include dmxnet lib:**
 
 `var dmxlib=require('dmxnet');`
