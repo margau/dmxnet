@@ -35,6 +35,10 @@ sender=function (options,parent){
 	this.ip=options.ip || "255.255.255.255";
     this.port=options.port || 6454; 
     this.verbose=this.parent.verbose;
+    //ToDo: Validate IP
+    //ToDo: Broadcast Flag
+
+    //Validate Input
 	if(this.net>127) {
         throw "Invalid Net, must be smaller than 128";
     }
@@ -43,6 +47,9 @@ sender=function (options,parent){
     }
     if(this.subnet>15) {
         throw "Invalid subnet, must be smaller than 16";
+    }
+    if((this.net<0)||(this.subnet<0)||(this.universe<0)) {
+        throw "Subnet, Net or Universe must be 0 or bigger!";
     }
 	if(this.verbose>0) {
 		console.log("new dmxnet sender started with params: "+JSON.stringify(options));
@@ -53,9 +60,8 @@ sender=function (options,parent){
 	for(var i = 0; i < 512; i++) {
 		this.values[i]=0;
 	}
-	//ToDo: Build Subnet/Universe/Net Int16
+	//Build Subnet/Universe/Net Int16
     this.subuni=(this.subnet<<4)|(this.universe);
-    console.log(this.subuni.toString(16));
     //ArtDmxSeq
     this.ArtDmxSeq=1;
 
@@ -110,8 +116,33 @@ sender.prototype.setChannel = function (channel, value) {
     }
     this.values[channel]=value;
     this.transmit();
-}
-//ToDo: Sender destroy         this.socket.close();, stop Interval
+};
+//SetChannels
+sender.prototype.setChannels = function (channels) {
+
+};
+//Fill Channels
+sender.prototype.fillChannels = function (start, stop, value) {
+    if((start>511) || (start < 0)) {
+        throw "Channel must be between 0 and 512";
+    }
+    if((stop>511) || (stop < 0)) {
+        throw "Channel must be between 0 and 512";
+    }
+    if((value > 255) || (value<0)) {
+        throw "Value must be between 0 and 255";
+    }
+    for(var i=start;i<=stop;i++) {
+        this.values[i]=value;
+    }
+    this.transmit();
+};
+//Stop sender
+sender.prototype.stop = function() {
+    clearInterval(this.interval);
+    this.socket.close();
+};
+
 //ToDo: Receiver
 //Export dmxnet
 module.exports = {dmxnet};
