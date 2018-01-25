@@ -1,6 +1,6 @@
 {
   "name": "dmxnet",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "ArtNet-DMX-sender and receiver for nodejs",
   "main": "lib.js",
   "scripts": {
@@ -13,7 +13,8 @@
   "keywords": [
     "artnet",
     "dmx",
-    "lightning"
+    "lightning",
+    "stage"
   ],
   "author": "margau",
   "license": "MIT",
