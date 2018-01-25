@@ -1,4 +1,6 @@
 # dmxnet
+[![GitHub version](https://badge.fury.io/gh/margau%2Fdmxnet.svg)](https://badge.fury.io/gh/margau%2Fdmxnet)
+
 dmxnet is an ArtNet-DMX-sender and receiver for nodejs,
 currently under heavy development!
 
