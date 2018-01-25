@@ -100,6 +100,17 @@ sender.prototype.transmit = function () {
 
 
 };
+//SetChannel function
+sender.prototype.setChannel = function (channel, value) {
+    if((channel>511) || (channel < 0)) {
+        throw "Channel must be between 0 and 512";
+    }
+    if((value > 255) || (value<0)) {
+        throw "Value must be between 0 and 255";
+    }
+    this.values[channel]=value;
+    this.transmit();
+}
 //ToDo: Sender destroy         this.socket.close();, stop Interval
 //ToDo: Receiver
 //Export dmxnet
