@@ -64,6 +64,6 @@ Sets channel (0-511) to value (0-255) and transmits the changed values .
 - Maybe support sACN?
 
 
-##Credits
+## Credits
 
 **Art-Net™ Designed by and Copyright Artistic Licence Holdings Ltd**
