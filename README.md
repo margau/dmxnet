@@ -1,12 +1,16 @@
 # dmxnet
-ArtNet-DMX-sender and receiver for nodejs,
+dmxnet is an ArtNet-DMX-sender and receiver for nodejs,
 currently under heavy development!
+
+Only the sender could be considered working by now.
 
 ## Installation
 
 **How to install current development version:**
 
-`npm install git+https://git@github.com/margau/dmxnet.git `
+```bash
+npm install git+https://git@github.com/margau/dmxnet.git 
+```
 
 ## Usage
 
@@ -14,11 +18,15 @@ currently under heavy development!
 
 **Include dmxnet lib:**
 
-`var dmxlib=require('dmxnet');`
+```javascript
+var dmxlib=require('dmxnet');
+```
 
 **Create new dmxnet object:**
 
-`var dmxnet = new dmxlib.dmxnet(options);`
+```javascript
+var dmxnet = new dmxlib.dmxnet(options);
+```
 
 Options:
 
@@ -33,7 +41,9 @@ Options:
 
 **Create new sender object:**
 
-`var sender=dmxnet.newSender(options);`
+```javascript 
+var sender=dmxnet.newSender(options);
+```
 
 Options:
 
@@ -49,11 +59,21 @@ Options:
 
 **Set Channel:**
 
-`sender.setChannel(channel,value);`
+```javascript
+sender.setChannel(channel,value);
+```
 
-Sets channel (0-511) to value (0-255) and transmits the changed values .
+Sets *channel* (0-511) to *value* (0-255) and transmits the changed values .
 
-**Please Note: dmxnet transmits an frame every 1000ms even if no channel has changed its value!**
+**Fill Channels**
+
+```javascript
+sender.fillChannels(min,max,value);
+```
+
+Sets all channels between *min* and *max* (including these) to *value* and transmits the values.
+
+**Please Note: dmxnet transmits a dmx-frame every 1000ms even if no channel has changed its value!**
 
 ## ToDo:
 

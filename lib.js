@@ -83,8 +83,8 @@ sender.prototype.transmit = function () {
 	if(this.ArtDmxSeq>255) {
 		this.ArtDmxSeq=1;
 	}
-	//Build Package: ID Int8[8], OpCode Int16 0x5000 (conv. to 0x0050), ProtVer Int16, Sequence Int8, PhysicalPort Int8, SubnetUniverseNet Int16, Length Int16 
-	var udpPackage=new Buffer(jspack.Pack(ArtDmxHeaderFormat+ArtDmxPayloadFormat,["Art-Net",0,0x0050,14,this.ArtDmxSeq,0,this.subuni,this.net,512].concat(this.values)));
+	//Build packet: ID Int8[8], OpCode Int16 0x5000 (conv. to 0x0050), ProtVer Int16, Sequence Int8, PhysicalPort Int8, SubnetUniverseNet Int16, Length Int16 
+	var udppacket=new Buffer(jspack.Pack(ArtDmxHeaderFormat+ArtDmxPayloadFormat,["Art-Net",0,0x0050,14,this.ArtDmxSeq,0,this.subuni,this.net,512].concat(this.values)));
     //Increase Sequence Counter    
     this.ArtDmxSeq++;
 
@@ -92,12 +92,12 @@ sender.prototype.transmit = function () {
         console.log("Transmitting frame");
     }
     if(this.verbose>2) {
-        console.log(udpPackage.toString('hex'));
+        console.log(udppacket.toString('hex'));
     }
     //Send UDP
     var client=this.socket;
     _this=this;
-    client.send(udpPackage, 0, udpPackage.length, this.port, this.ip, function(err, bytes) {
+    client.send(udppacket, 0, udppacket.length, this.port, this.ip, function(err, bytes) {
         if (err) throw err;
         if(_this.verbose>1) {
             console.log('ArtDMX frame sent to ' + _this.ip +':'+ _this.port);
