@@ -13,6 +13,12 @@ Initital Release, sending ArtDMX working
 
 ## Installation
 
+**How to install latest release:**
+
+```bash
+npm install dmxnet 
+```
+
 **How to install current development version:**
 
 ```bash
