@@ -1,5 +1,11 @@
 # dmxnet
-[![GitHub version](https://badge.fury.io/gh/margau%2Fdmxnet.svg)](https://badge.fury.io/gh/margau%2Fdmxnet)
+[![GitHub release](https://img.shields.io/github/release/qubyte/rubidium.svg)](https://github.com/margau/dmxnet)
+[![npm](https://img.shields.io/npm/v/npm.svg)](https://github.com/margau/dmxnet)
+[![GitHub issues](https://img.shields.io/github/issues/margau/dmxnet.svg)](https://github.com/margau/dmxnet/issues)
+[![GitHub stars](https://img.shields.io/github/stars/margau/dmxnet.svg)](https://github.com/margau/dmxnet/stargazers)
+[![GitHub license](https://img.shields.io/github/license/margau/dmxnet.svg)](https://github.com/margau/dmxnet/blob/master/LICENSE)
+[![Github All Releases](https://img.shields.io/github/downloads/atom/atom/total.svg)](https://github.com/margau/dmxnet)
+[![npm](https://img.shields.io/npm/dt/express.svg)](https://github.com/margau/dmxnet)
 
 dmxnet is an ArtNet-DMX-sender and receiver for nodejs,
 currently under heavy development!
