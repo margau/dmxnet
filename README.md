@@ -92,6 +92,31 @@ sender.fillChannels(min,max,value);
 
 Sets all channels between *min* and *max* (including these) to *value* and transmits the values.
 
+**Prepare Channel:**
+
+```javascript
+sender.prepChannel(channel,value);
+```
+
+Prepares *channel* (0-511) to *value* (0-255) without transmitting.
+
+Change is transmitted with next 
+```javascript
+sender.transmit();
+```
+call, or the next periodically transmit. Useful for changing lots of channels at once/in parallel from device view.
+
+**Transmit:**
+
+```javascript
+sender.transmit();
+```
+
+Transmits a new ArtDMX Frame manually.
+
+
+
+
 **Please Note: dmxnet transmits a dmx-frame every 1000ms even if no channel has changed its value!**
 
 ## ToDo:
@@ -99,8 +124,12 @@ Sets all channels between *min* and *max* (including these) to *value* and trans
 - Receiving ArtDmx
 - Receiving ArtPoll
 - Sending ArtPollReply
-- Act as Controller (Sending ArtPollReply)
+- Act as Controller (Sending ArtPoll)
 - Maybe support sACN?
+
+
+### Please feel free to contribute!
+
 
 
 ## Credits
