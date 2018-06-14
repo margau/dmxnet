@@ -13,6 +13,8 @@ currently under heavy development!
 Only the sender could be considered working by now.
 
 ## Changelog
+**v0.1.1**
+Added prepare channel
 
 **v0.1.0**
 Initital Release, sending ArtDMX working
