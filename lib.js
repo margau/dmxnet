@@ -10,7 +10,7 @@ var ArtDmxPayloadFormat = '512B';
 //dmxnet constructor
 function dmxnet(options) {
 	this.verbose=options.verbose || 0;
-	this.oem=options.oem || 0;
+	this.oem=options.oem || 2908; //OEM code hex
     if(this.verbose>0) {
         console.log("dmxnet started with options "+JSON.stringify(options));
     }
