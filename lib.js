@@ -34,6 +34,7 @@ sender=function (options,parent){
 	this.net=options.net || 0;
 	this.subnet=options.subnet || 0;
 	this.universe=options.universe || 0;
+	this.subuni=options.subuni;
 	this.ip=options.ip || "255.255.255.255";
     this.port=options.port || 6454; 
     this.verbose=this.parent.verbose;
@@ -60,7 +61,9 @@ sender=function (options,parent){
 		this.values[i]=0;
 	}
 	//Build Subnet/Universe/Net Int16
-    this.subuni=(this.subnet<<4)|(this.universe);
+    	if(!this.subuni) {
+	this.subuni=(this.subnet<<4)|(this.universe);
+	}
     //ArtDmxSeq
     this.ArtDmxSeq=1;
 
