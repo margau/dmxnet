@@ -15,6 +15,7 @@ var ArtDmxPayloadFormat = '512B';
 function dmxnet(options) {
 	this.verbose=options.verbose || 0;
 	this.oem=options.oem || 2908; //OEM code hex
+	this.port=options.listen || 6454; //Port listening for incoming
     if(this.verbose>0) {
 		log.setLevel('info');
 		if(this.verbose>1) {
@@ -24,8 +25,14 @@ function dmxnet(options) {
 		log.setLevel('warn');
 	}
 	log.info("started with options "+JSON.stringify(options));
-    //ToDo: Register Sender and Receiver    
-    //ToDo: Send ArtPoll
+	//Create listener
+	if(!Number.isInteger(this.port)) throw "Invalid Port";
+	this.listener = dgram.createSocket({type:'udp4',reuseAddr:true});
+	this.listener.on("error", function(err) {
+		throw "Socket error: "+err;
+	});
+	this.listener.bind(this.port);
+	log.info("Listening on port "+this.port);
     return this;
 }
 //get a new sender object
@@ -168,6 +175,7 @@ sender.prototype.stop = function() {
     clearInterval(this.interval);
     this.socket.close();
 };
+//ToDo: Improve method
 function isBroadcast(ipaddress) {
 	var oct=ipaddress.split('.');
 	if(oct.length!=4) {
