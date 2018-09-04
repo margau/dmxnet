@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/margau/dmxnet#readme",
   "dependencies": {
-    "jspack": "0.0.4"
+    "jspack": "0.0.4",
+    "simple-node-logger": "^0.93.37"
   }
 }

@@ -1,5 +1,9 @@
 var dgram = require('dgram');
 var jspack = require('jspack').jspack;
+//Require Logger
+const manager = require('simple-node-logger').createLogManager();
+//Init Logger
+const log = manager.createLogger('dmxnet');
 
 // ArtDMX Header for jspack
 var ArtDmxHeaderFormat = '!7sBHHBBBBH';
@@ -12,8 +16,14 @@ function dmxnet(options) {
 	this.verbose=options.verbose || 0;
 	this.oem=options.oem || 2908; //OEM code hex
     if(this.verbose>0) {
-        console.log("dmxnet started with options "+JSON.stringify(options));
-    }
+		log.setLevel('info');
+		if(this.verbose>1) {
+			log.setLevel('debug');
+		}
+    } else {
+		log.setLevel('warn');
+	}
+	log.info("started with options "+JSON.stringify(options));
     //ToDo: Register Sender and Receiver    
     //ToDo: Send ArtPoll
     return this;
@@ -52,7 +62,7 @@ sender=function (options,parent){
         throw "Subnet, Net or Universe must be 0 or bigger!";
     }
 	if(this.verbose>0) {
-		console.log("new dmxnet sender started with params: "+JSON.stringify(options));
+		log.info("new dmxnet sender started with params: "+JSON.stringify(options));
 	}
 	//init dmx-value array
 	this.values=new Array()
@@ -102,20 +112,13 @@ sender.prototype.transmit = function () {
         //Increase Sequence Counter    
         this.ArtDmxSeq++;
 
-        if(this.verbose>1) {
-            console.log("Transmitting frame");
-        }
-        if(this.verbose>2) {
-            console.log(udppacket.toString('hex'));
-        }
+        log.debug("Packet content: "+udppacket.toString('hex'));
         //Send UDP
         var client=this.socket;
         _this=this;
         client.send(udppacket, 0, udppacket.length, this.port, this.ip, function(err, bytes) {
             if (err) throw err;
-            if(_this.verbose>1) {
-                console.log('ArtDMX frame sent to ' + _this.ip +':'+ _this.port);
-            }
+            log.info('ArtDMX frame sent to ' + _this.ip +':'+ _this.port);
         });
     }
 };

@@ -1,9 +1,9 @@
 //Load dmxnet as libary
 var dmxlib=require('./lib.js');
 //Create new dmxnet instance
-var dmxnet = new dmxlib.dmxnet({verbose:2});
+var dmxnet = new dmxlib.dmxnet({verbose:1});
 //Create new Sender instance
-var sender=dmxnet.newSender({ip:"255.255.255.255",subnet:0,universe:0,net:0});
+var sender=dmxnet.newSender({ip:"255.255.255.255",subnet:0,universe:5,net:0});
 //Set Channels
 sender.setChannel(511,255);
 sender.setChannel(255,128);
