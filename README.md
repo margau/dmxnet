@@ -13,6 +13,9 @@ currently under heavy development!
 Only the sender could be considered working by now.
 
 ## Changelog
+**v0.1.3**
+Improved logging trough use of simple-node-logger
+
 **v0.1.2**
 Added subuni option to sender
 
