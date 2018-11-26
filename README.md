@@ -1,12 +1,12 @@
 # dmxnet
-[![GitHub release](https://img.shields.io/github/release/margau/dmxnet.svg)](https://github.com/margau/dmxnet)
-[![npm](https://img.shields.io/npm/v/dmxnet.svg)](https://github.com/margau/dmxnet)
+[![GitHub release](https://img.shields.io/github/release/margau/dmxnet.svg)](https://github.com/margau/dmxnet/releases)
+[![npm](https://img.shields.io/npm/v/dmxnet.svg)](https://www.npmjs.com/package/dmxnet)
 [![GitHub issues](https://img.shields.io/github/issues/margau/dmxnet.svg)](https://github.com/margau/dmxnet/issues)
 [![GitHub stars](https://img.shields.io/github/stars/margau/dmxnet.svg)](https://github.com/margau/dmxnet/stargazers)
 [![GitHub license](https://img.shields.io/github/license/margau/dmxnet.svg)](https://github.com/margau/dmxnet/blob/master/LICENSE)
 [![GitHub last commit](https://img.shields.io/github/last-commit/margau/dmxnet.svg)](https://github.com/margau/dmxnet)
-[![Github All Releases](https://img.shields.io/github/downloads/margau/dmxnet/total.svg)](https://github.com/margau/dmxnet)
-[![npm](https://img.shields.io/npm/dt/dmxnet.svg)](https://github.com/margau/dmxnet)
+[![Github All Releases](https://img.shields.io/github/downloads/margau/dmxnet/total.svg)](https://github.com/margau/dmxnet/releases)
+[![npm](https://img.shields.io/npm/dt/dmxnet.svg)](https://www.npmjs.com/package/dmxnet)
 [![Travis (.com)](https://img.shields.io/travis/com/margau/dmxnet.svg)](https://travis-ci.com/margau/dmxnet)
 
 dmxnet is an ArtNet-DMX-sender and receiver for nodejs,
