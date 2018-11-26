@@ -53,6 +53,17 @@ function dmxnet(options) {
   // Start listening
   this.listener4.bind(this.port);
   log.info("Listening on port " + this.port);
+  // Periodically check Controllers
+  setInterval(() => {
+    if (this.controllers) {
+      log.debug("Check controller alive, count "+this.controllers.length);
+      for (var index = 0; index < this.controllers.length; index++) {
+        if ((new Date().getTime() - new Date(this.controllers[index].last_poll).getTime()) > 60000) {
+          this.controllers[index].alive = false;
+        }
+      }
+    }
+  }, 30000);
   return this;
 }
 //get a new sender object
@@ -259,17 +270,16 @@ dataParser = function(msg, rinfo, parent) {
       ctrl.unilateral = ((ttm_raw & 0b00000010) > 0);
       // Insert into controller's reference
       var done = false;
-      for (controller in parent.controllers) {
-        if (controller.ip == rinfo.address) {
+      for (var index = 0; index < parent.controllers.length; ++index) {
+        if (parent.controllers[index].ip == rinfo.address) {
           done = true;
-          controller = ctrl;
-          return ctrl;
+          parent.controllers[index] = ctrl;
         }
       }
       if (done != true) {
         parent.controllers.push(ctrl);
       }
-			log.debug("Controllers: " + JSON.stringify(parent.controllers));
+      log.debug("Controllers: " + JSON.stringify(parent.controllers));
       break;
     case 0x2100:
       // ToDo
