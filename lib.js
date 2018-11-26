@@ -27,6 +27,13 @@ function dmxnet(options) {
   }
   // Log started information
   log.info("started with options " + JSON.stringify(options));
+
+  // Array containing reference to foreign controllers
+  this.controllers = Array();
+  // Array containing reference to foreign node's
+  this.nodes = Array();
+  // Timestamp of last Art-Poll send
+  this.last_poll;
   //Create listener for incoming data
   if (!Number.isInteger(this.port)) throw "Invalid Port";
   this.listener4 = dgram.createSocket({
@@ -68,7 +75,8 @@ sender = function(options, parent) {
   this.ip = options.ip || "255.255.255.255";
   this.port = options.port || 6454;
   this.verbose = this.parent.verbose;
-  //Validate Input
+
+  // Validate Input
   if (this.net > 127) {
     throw "Invalid Net, must be smaller than 128";
   }
@@ -241,13 +249,27 @@ dataParser = function(msg, rinfo, parent) {
       // Parse TalkToMe
       var ctrl = {
         ip: rinfo.address,
-        family: rinfo.family
+        family: rinfo.family,
+        last_poll: Date(),
+        alive: true
       };
       var ttm_raw = parseInt(jspack.Unpack("B", msg, 12));
       ctrl.diagnostic_unicast = ((ttm_raw & 0b00001000) > 0);
       ctrl.diagnostic_enable = ((ttm_raw & 0b00000100) > 0);
       ctrl.unilateral = ((ttm_raw & 0b00000010) > 0);
-      log.debug("Controller: "+jsonify(ctrl));
+      // Insert into controller's reference
+      var done = false;
+      for (controller in parent.controllers) {
+        if (controller.ip == rinfo.address) {
+          done = true;
+          controller = ctrl;
+          return ctrl;
+        }
+      }
+      if (done != true) {
+        parent.controllers.push(ctrl);
+      }
+			log.debug("Controllers: " + JSON.stringify(parent.controllers));
       break;
     case 0x2100:
       // ToDo
