@@ -4,6 +4,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/margau/dmxnet.svg)](https://github.com/margau/dmxnet/issues)
 [![GitHub stars](https://img.shields.io/github/stars/margau/dmxnet.svg)](https://github.com/margau/dmxnet/stargazers)
 [![GitHub license](https://img.shields.io/github/license/margau/dmxnet.svg)](https://github.com/margau/dmxnet/blob/master/LICENSE)
+[![GitHub last commit](https://img.shields.io/github/last-commit/margau/dmxnet.svg)](https://github.com/margau/dmxnet)
 [![Github All Releases](https://img.shields.io/github/downloads/margau/dmxnet/total.svg)](https://github.com/margau/dmxnet)
 [![npm](https://img.shields.io/npm/dt/dmxnet.svg)](https://github.com/margau/dmxnet)
 
@@ -30,13 +31,13 @@ Initital Release, sending ArtDMX working
 **How to install latest release:**
 
 ```bash
-npm install dmxnet 
+npm install dmxnet
 ```
 
 **How to install current development version:**
 
 ```bash
-npm install git+https://git@github.com/margau/dmxnet.git 
+npm install git+https://git@github.com/margau/dmxnet.git
 ```
 
 ## Usage
@@ -68,7 +69,7 @@ Options:
 
 **Create new sender object:**
 
-```javascript 
+```javascript
 var sender=dmxnet.newSender(options);
 ```
 
@@ -108,7 +109,7 @@ sender.prepChannel(channel,value);
 
 Prepares *channel* (0-511) to *value* (0-255) without transmitting.
 
-Change is transmitted with next 
+Change is transmitted with next
 ```javascript
 sender.transmit();
 ```
