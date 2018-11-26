@@ -4,7 +4,9 @@
   "description": "ArtNet-DMX-sender and receiver for nodejs",
   "main": "lib.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "lint": "eslint --ignore-path .gitignore .",
+    "lintfix": "eslint --ignore-path .gitignore --fix ."
   },
   "repository": {
     "type": "git",
@@ -25,5 +27,9 @@
   "dependencies": {
     "jspack": "0.0.4",
     "simple-node-logger": "^0.93.37"
+  },
+  "devDependencies": {
+    "eslint": "^5.9.0",
+    "eslint-config-strongloop": "^2.1.0"
   }
 }
