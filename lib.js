@@ -75,6 +75,12 @@ function dmxnet(options) {
   // Start listening
   this.listener4.bind(this.port);
   log.info('Listening on port ' + this.port);
+  // Open Socket for sending broadcast data
+  this.socket = dgram.createSocket('udp4');
+  this.socket.bind(() => {
+    this.socket.setBroadcast(true);
+    this.socket_ready = true;
+  });
   // Periodically check Controllers
   setInterval(() => {
     if (this.controllers) {
@@ -175,9 +181,9 @@ sender.prototype.transmit = function() {
     // SubnetUniverseNet Int16, Length Int16
     var udppacket = Buffer.from(jspack.Pack(ArtDmxHeaderFormat +
       ArtDmxPayloadFormat,
-    ['Art-Net', 0, 0x0050, 14, this.ArtDmxSeq, 0, this.subuni,
-      this.net, 512,
-    ].concat(this.values)));
+      ['Art-Net', 0, 0x0050, 14, this.ArtDmxSeq, 0, this.subuni,
+        this.net, 512,
+      ].concat(this.values)));
     // Increase Sequence Counter
     this.ArtDmxSeq++;
 
@@ -253,6 +259,33 @@ function isBroadcast(ipaddress) {
   }
   return false;
 }
+// ArtPollReply
+dmxnet.prototype.ArtPollReply = function() {
+  var ArtPollReplyFormat = "!7sBHBBBBHHBBHBBH18s64s64sH4B4B4B4B4B3HB6B4BBB";
+  log.debug("Send ArtPollReply");
+  var sourceip = "0.0.0.0";
+	var broadcastip = "255.255.255.255";
+	var netSwitch = 0x01;
+	var subSwitch = 0x01;
+	var status = 0;
+	var stateString = "#0000 [0000] Running"
+	var portType = 0b01000000;
+  var udppacket = Buffer.from(jspack.Pack(
+    ArtPollReplyFormat,
+    ['Art-Net', 0, 0x0021, sourceip.split('.')[0], sourceip.split('.')[1], sourceip.split('.')[2], sourceip.split('.')[3], this.port,
+	0x0001, netSwitch, subSwitch, this.oem,0,status,0,"dmxnet node","dmxnet nodejs artnet",stateString,
+4,portType,portType,portType,portType,0,0,0,0,0,0,0,0,0,1,2,3,0,1,2,3,0,0,0,0,
+0,0,0,0,0,0,sourceip.split('.')[0], sourceip.split('.')[1], sourceip.split('.')[2], sourceip.split('.')[3],
+1,0]));
+  log.debug('Packet content: ' + udppacket.toString('hex'));
+  // Send UDP
+  var client = this.socket;
+  client.send(udppacket, 0, udppacket.length, 6454, broadcastip,
+    (err, bytes) => {
+      if (err) throw err;
+      log.info('ArtPollReply frame sent');
+    });
+}
 // Parser & receiver
 var dataParser = function(msg, rinfo, parent) {
   log.debug(`got UDP from ${rinfo.address}:${rinfo.port}`);
@@ -313,6 +346,7 @@ var dataParser = function(msg, rinfo, parent) {
       if (done !== true) {
         parent.controllers.push(ctrl);
       }
+      parent.ArtPollReply();
       log.debug('Controllers: ' + JSON.stringify(parent.controllers));
       break;
     case 0x2100:
