@@ -1,0 +1,9 @@
+{
+  "extends": "strongloop",
+  "parserOptions": {
+    "ecmaVersion": 6
+  },
+  "rules": {
+    "new-cap": 0
+  }
+}
