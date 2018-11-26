@@ -2,6 +2,8 @@
 /* eslint-env node, mocha */
 var dgram = require('dgram');
 var jspack = require('jspack').jspack;
+const os = require('os');
+const Netmask = require('netmask').Netmask;
 // Require Logger
 const manager = require('simple-node-logger').createLogManager();
 // Init Logger
@@ -30,6 +32,24 @@ function dmxnet(options) {
   // Log started information
   log.info('started with options ' + JSON.stringify(options));
 
+  // Get all network interfaces
+  this.interfaces = os.networkInterfaces();
+  this.ip4 = [];
+  this.ip6 = [];
+  // Iterate over interfaces and insert sorted IPs
+  Object.keys(this.interfaces).forEach((key) => {
+    this.interfaces[key].forEach((val) => {
+      if (val.family === 'IPv4') {
+        var netmask = new Netmask(val.cidr);
+        this.ip4.push({
+          ip: val.address,
+          netmask: val.netmask,
+          broadcast: netmask.broadcast,
+        });
+      }
+    });
+  });
+  log.debug('Interfaces: ' + JSON.stringify(this.ip4));
   // Array containing reference to foreign controllers
   this.controllers = [];
   // Array containing reference to foreign node's
@@ -123,12 +143,12 @@ var sender = function(opt, parent) {
 
   // Create Socket
   this.socket = dgram.createSocket('udp4');
-  _this = this;
+
   // Check IP and Broadcast
   if (isBroadcast(this.ip)) {
-    this.socket.bind(function() {
-      _this.socket.setBroadcast(true);
-      _this.socket_ready = true;
+    this.socket.bind(() => {
+      this.socket.setBroadcast(true);
+      this.socket_ready = true;
     });
 
   } else {
@@ -137,11 +157,10 @@ var sender = function(opt, parent) {
   // Transmit first Frame
   this.transmit();
 
-  // Workaround for this-Contect inside setInterval
-  var _this = this;
+
   // Send Frame all 1000ms even there is no channel change
-  this.interval = setInterval(function() {
-    _this.transmit();
+  this.interval = setInterval(() => {
+    this.transmit();
   }, 1000);
 };
 // Transmit function
