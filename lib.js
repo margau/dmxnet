@@ -234,9 +234,7 @@ function isBroadcast(ipaddress) {
   }
   return false;
 }
-// Receiver
-
-// Parser
+// Parser & receiver
 var dataParser = function(msg, rinfo, parent) {
   log.debug(`got UDP from ${rinfo.address}:${rinfo.port}`);
   if (rinfo.size < 10) {
@@ -260,6 +258,10 @@ var dataParser = function(msg, rinfo, parent) {
       log.debug('detected ArtDMX');
       break;
     case 0x2000:
+      if (rinfo.size < 14) {
+        log.debug('ArtPoll to small');
+        return;
+      }
       log.debug('detected ArtPoll');
       // Parse Protocol version
       var proto = parseInt(jspack.Unpack('B', msg, 10), 10);
@@ -279,6 +281,8 @@ var dataParser = function(msg, rinfo, parent) {
       ctrl.diagnostic_unicast = ((ttm_raw & 0b00001000) > 0);
       ctrl.diagnostic_enable = ((ttm_raw & 0b00000100) > 0);
       ctrl.unilateral = ((ttm_raw & 0b00000010) > 0);
+      // Priority
+      ctrl.priority = parseInt(jspack.Unpack('B', msg, 13), 10);
       // Insert into controller's reference
       var done = false;
       for (var index = 0; index < parent.controllers.length; ++index) {
