@@ -7,6 +7,7 @@
 [![GitHub last commit](https://img.shields.io/github/last-commit/margau/dmxnet.svg)](https://github.com/margau/dmxnet)
 [![Github All Releases](https://img.shields.io/github/downloads/margau/dmxnet/total.svg)](https://github.com/margau/dmxnet)
 [![npm](https://img.shields.io/npm/dt/dmxnet.svg)](https://github.com/margau/dmxnet)
+[![Travis (.com)](https://img.shields.io/travis/com/margau/dmxnet.svg)](https://travis-ci.com/margau/dmxnet)
 
 dmxnet is an ArtNet-DMX-sender and receiver for nodejs,
 currently under heavy development!
