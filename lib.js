@@ -10,7 +10,6 @@ var ArtDmxHeaderFormat = '!7sBHHBBBBH';
 // ArtDMX Payload for jspack
 var ArtDmxPayloadFormat = '512B';
 
-
 //dmxnet constructor
 function dmxnet(options) {
   // Parse all options and set defaults
@@ -209,7 +208,34 @@ function isBroadcast(ipaddress) {
 
 // Parser
 dataParser = function(msg, rinfo, parent) {
-	log.debug(`got UDP from ${rinfo.address}:${rinfo.port}`);
+  log.debug(`got UDP from ${rinfo.address}:${rinfo.port}`);
+  // Check first 8 bytes for the "Art-Net" - String
+  if (jspack.Unpack("!8s", msg) != "Art-Net\u0000") {
+    log.debug("Invalid header");
+    return;
+  }
+  var opcode = parseInt(jspack.Unpack("B", msg, 8));
+  opcode += parseInt(jspack.Unpack("B", msg, 9)) * 256;
+  if (!opcode || opcode == 0) {
+    log.debug("Invalid OpCode");
+    return;
+  }
+  switch (opcode) {
+    case 0x5000:
+      // ToDo
+      log.debug("detected ArtDMX")
+      break;
+    case 0x2000:
+			// ToDo
+	    log.debug("detected ArtPoll");
+      break;
+    case 0x2100:
+			// ToDo
+      log.debug("detected ArtPollReply");
+      break;
+    default:
+      log.debug("OpCode not implemented");
+  }
 
 }
 // Export dmxnet
