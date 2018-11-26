@@ -209,6 +209,10 @@ function isBroadcast(ipaddress) {
 // Parser
 dataParser = function(msg, rinfo, parent) {
   log.debug(`got UDP from ${rinfo.address}:${rinfo.port}`);
+  if (rinfo.size < 10) {
+    log.debug("Payload to short");
+    return;
+  }
   // Check first 8 bytes for the "Art-Net" - String
   if (jspack.Unpack("!8s", msg) != "Art-Net\u0000") {
     log.debug("Invalid header");
@@ -226,11 +230,27 @@ dataParser = function(msg, rinfo, parent) {
       log.debug("detected ArtDMX")
       break;
     case 0x2000:
-			// ToDo
-	    log.debug("detected ArtPoll");
+      log.debug("detected ArtPoll");
+      // Parse Protocol version
+      var proto = parseInt(jspack.Unpack("B", msg, 10));
+      proto += parseInt(jspack.Unpack("B", msg, 11)) * 256;
+      if (!proto || proto < 14) {
+        log.debug("Invalid OpCode");
+        return;
+      }
+      // Parse TalkToMe
+      var ctrl = {
+        ip: rinfo.address,
+        family: rinfo.family
+      };
+      var ttm_raw = parseInt(jspack.Unpack("B", msg, 12));
+      ctrl.diagnostic_unicast = ((ttm_raw & 0b00001000) > 0);
+      ctrl.diagnostic_enable = ((ttm_raw & 0b00000100) > 0);
+      ctrl.unilateral = ((ttm_raw & 0b00000010) > 0);
+      log.debug("Controller: "+jsonify(ctrl));
       break;
     case 0x2100:
-			// ToDo
+      // ToDo
       log.debug("detected ArtPollReply");
       break;
     default:
