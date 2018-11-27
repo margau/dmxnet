@@ -14,7 +14,19 @@ currently under heavy development!
 
 Only the sender could be considered working by now.
 
+## Features
+
+- Send DMX-Data as ArtNet
+- Use multiple senders with different Net, Subnet and Universe-Settings
+- Receive ArtPoll and send ArtPollReply (dmxnet is found by other software, e.g. [DMX-Workshop](https://art-net.org.uk/resources/dmx-workshop/))
+
+
+
 ## Changelog
+**v0.2.0**
+
+Added support for receiving ArtPoll and sending ArtPollReply.
+
 **v0.1.3**
 Improved logging trough use of simple-node-logger
 
