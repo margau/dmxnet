@@ -2,6 +2,8 @@
 /* eslint-env node, mocha */
 var dgram = require('dgram');
 var jspack = require('jspack').jspack;
+const os = require('os');
+const Netmask = require('netmask').Netmask;
 // Require Logger
 const manager = require('simple-node-logger').createLogManager();
 // Init Logger
@@ -16,8 +18,11 @@ var ArtDmxPayloadFormat = '512B';
 function dmxnet(options) {
   // Parse all options and set defaults
   this.verbose = options.verbose || 0;
-  this.oem = options.oem || 2908; // OEM code hex
+  this.oem = options.oem || 0x2908; // OEM code hex
   this.port = options.listen || 6454; // Port listening for incoming data
+  this.sName = options.sName || 'dmxnet'; // Shortname
+  this.lName = options.lName ||
+    'dmxnet - OpenSource ArtNet Transceiver'; // Longname
   // Set log levels
   if (this.verbose > 0) {
     log.setLevel('info');
@@ -30,10 +35,35 @@ function dmxnet(options) {
   // Log started information
   log.info('started with options ' + JSON.stringify(options));
 
+  // Get all network interfaces
+  this.interfaces = os.networkInterfaces();
+  this.ip4 = [];
+  this.ip6 = [];
+  // Iterate over interfaces and insert sorted IPs
+  Object.keys(this.interfaces).forEach((key) => {
+    this.interfaces[key].forEach((val) => {
+      if (val.family === 'IPv4') {
+        var netmask = new Netmask(val.cidr);
+        this.ip4.push({
+          ip: val.address,
+          netmask: val.netmask,
+          mac: val.mac,
+          broadcast: netmask.broadcast,
+        });
+      }
+    });
+  });
+  log.debug('Interfaces: ' + JSON.stringify(this.ip4));
+  // init artPollReplyCount
+  this.artPollReplyCount = 0;
   // Array containing reference to foreign controllers
   this.controllers = [];
   // Array containing reference to foreign node's
   this.nodes = [];
+  // Array containing reference to senders
+  this.senders = [];
+  // Array containing reference to receiver objects
+  this.receivers = [];
   // Timestamp of last Art-Poll send
   this.last_poll;
   // Create listener for incoming data
@@ -55,6 +85,12 @@ function dmxnet(options) {
   // Start listening
   this.listener4.bind(this.port);
   log.info('Listening on port ' + this.port);
+  // Open Socket for sending broadcast data
+  this.socket = dgram.createSocket('udp4');
+  this.socket.bind(() => {
+    this.socket.setBroadcast(true);
+    this.socket_ready = true;
+  });
   // Periodically check Controllers
   setInterval(() => {
     if (this.controllers) {
@@ -72,7 +108,10 @@ function dmxnet(options) {
 }
 // get a new sender object
 dmxnet.prototype.newSender = function(options) {
-  return new sender(options, this);
+  var s = new sender(options, this);
+  this.senders.push(s);
+  this.ArtPollReply();
+  return s;
 };
 
 // define sender with user options and inherited parent object
@@ -123,12 +162,12 @@ var sender = function(opt, parent) {
 
   // Create Socket
   this.socket = dgram.createSocket('udp4');
-  _this = this;
+
   // Check IP and Broadcast
   if (isBroadcast(this.ip)) {
-    this.socket.bind(function() {
-      _this.socket.setBroadcast(true);
-      _this.socket_ready = true;
+    this.socket.bind(() => {
+      this.socket.setBroadcast(true);
+      this.socket_ready = true;
     });
 
   } else {
@@ -137,11 +176,10 @@ var sender = function(opt, parent) {
   // Transmit first Frame
   this.transmit();
 
-  // Workaround for this-Contect inside setInterval
-  var _this = this;
+
   // Send Frame all 1000ms even there is no channel change
-  this.interval = setInterval(function() {
-    _this.transmit();
+  this.interval = setInterval(() => {
+    this.transmit();
   }, 1000);
 };
 // Transmit function
@@ -216,6 +254,12 @@ sender.prototype.fillChannels = function(start, stop, value) {
 // Stop sender
 sender.prototype.stop = function() {
   clearInterval(this.interval);
+  this.parent.senders = this.parent.senders.filter(function(value, index, arr) {
+    if (value === this) {
+      return false;
+    }
+    return true;
+  });
   this.socket.close();
 };
 // ToDo: Improve method
@@ -234,9 +278,121 @@ function isBroadcast(ipaddress) {
   }
   return false;
 }
-// Receiver
+// ArtPollReply
+dmxnet.prototype.ArtPollReply = function() {
+  log.debug('Send ArtPollReply');
 
-// Parser
+  this.ip4.forEach((ip) => {
+    // BindIndex handles all the different "instance".
+    var bindIndex = 1;
+    var ArtPollReplyFormat = '!7sBHBBBBHHBBHBBH18s64s64sH4B4B4B4B4B3HB6B4BBB';
+    var netSwitch = 0x01;
+    var subSwitch = 0x01;
+    var status = 0b11010000;
+    var stateString = '#0001 [' + ('000' + this.artPollReplyCount).slice(-4) +
+      '] dmxnet ArtNet-Transceiver running';
+    var sourceip = ip.ip;
+    var broadcastip = ip.broadcast;
+    // one packet for each sender
+    this.senders.forEach((s) => {
+      var portType = 0b01000000;
+      var udppacket = Buffer.from(jspack.Pack(
+        ArtPollReplyFormat,
+        ['Art-Net', 0, 0x0021,
+          // 4 bytes source ip + 2 bytes port
+          sourceip.split('.')[0], sourceip.split('.')[1],
+          sourceip.split('.')[2], sourceip.split('.')[3], this.port,
+          // 2 bytes Firmware version, netSwitch, subSwitch, OEM-Code
+          0x0001, s.net, s.subnet, this.oem,
+          // Ubea, status1, 2 bytes ESTA
+          0, status, 0,
+          // short name (18), long name (63), stateString (63)
+          this.sName.substring(0, 16), this.lName.substring(0, 63), stateString,
+          // 2 bytes num ports, 4*portTypes
+          1, portType, 0, 0, 0,
+          // 4*goodInput, 4*goodOutput
+          0b10000000, 0, 0, 0, 0, 0, 0, 0,
+          // 4*SW IN, 4*SW OUT
+          s.universe, 0, 0, 0, 0, 0, 0, 0,
+          // 5* deprecated/spare, style
+          0, 0, 0, 0x01,
+          // MAC address
+          parseInt(ip.mac.split(':')[0], 16),
+          parseInt(ip.mac.split(':')[1], 16),
+          parseInt(ip.mac.split(':')[2], 16),
+          parseInt(ip.mac.split(':')[3], 16),
+          parseInt(ip.mac.split(':')[4], 16),
+          parseInt(ip.mac.split(':')[5], 16),
+          // BindIP
+          sourceip.split('.')[0], sourceip.split('.')[1],
+          sourceip.split('.')[2], sourceip.split('.')[3],
+          // BindIndex, Status2
+          bindIndex, 0b00001110,
+        ]));
+      // Increase bindIndex
+      bindIndex++;
+      if (bindIndex > 255) {
+        bindIndex = 1;
+      }
+      // Send UDP
+      var client = this.socket;
+      client.send(udppacket, 0, udppacket.length, 6454, broadcastip,
+        (err, bytes) => {
+          if (err) throw err;
+          log.info('ArtPollReply frame sent');
+        });
+    });
+    if (this.senders.length < 1) {
+      // No senders available, propagate as "empty"
+      var udppacket = Buffer.from(jspack.Pack(
+        ArtPollReplyFormat,
+        ['Art-Net', 0, 0x0021,
+          // 4 bytes source ip + 2 bytes port
+          sourceip.split('.')[0], sourceip.split('.')[1],
+          sourceip.split('.')[2], sourceip.split('.')[3], this.port,
+          // 2 bytes Firmware version, netSwitch, subSwitch, OEM-Code
+          0x0001, netSwitch, subSwitch, this.oem,
+          // Ubea, status1, 2 bytes ESTA
+          0, status, 0,
+          // short name (18), long name (63), stateString (63)
+          this.sName.substring(0, 16), this.lName.substring(0, 63), stateString,
+          // 2 bytes num ports, 4*portTypes
+          0, 0, 0, 0, 0,
+          // 4*goodInput, 4*goodOutput
+          0, 0, 0, 0, 0, 0, 0, 0,
+          // 4*SW IN, 4*SW OUT
+          0, 0, 0, 0, 0, 0, 0, 0,
+          // 5* deprecated/spare, style
+          0, 0, 0, 0x01,
+          // MAC address
+          parseInt(ip.mac.split(':')[0], 16),
+          parseInt(ip.mac.split(':')[1], 16),
+          parseInt(ip.mac.split(':')[2], 16),
+          parseInt(ip.mac.split(':')[3], 16),
+          parseInt(ip.mac.split(':')[4], 16),
+          parseInt(ip.mac.split(':')[5], 16),
+          // BindIP
+          sourceip.split('.')[0], sourceip.split('.')[1],
+          sourceip.split('.')[2], sourceip.split('.')[3],
+          // BindIndex, Status2
+          1, 0b00001110,
+        ]));
+      log.debug('Packet content: ' + udppacket.toString('hex'));
+      // Send UDP
+      var client = this.socket;
+      client.send(udppacket, 0, udppacket.length, 6454, broadcastip,
+        (err, bytes) => {
+          if (err) throw err;
+          log.info('ArtPollReply frame sent');
+        });
+    }
+  });
+  this.artPollReplyCount++;
+  if (this.artPollReplyCount > 9999) {
+    this.artPollReplyCount = 0;
+  }
+};
+// Parser & receiver
 var dataParser = function(msg, rinfo, parent) {
   log.debug(`got UDP from ${rinfo.address}:${rinfo.port}`);
   if (rinfo.size < 10) {
@@ -260,6 +416,10 @@ var dataParser = function(msg, rinfo, parent) {
       log.debug('detected ArtDMX');
       break;
     case 0x2000:
+      if (rinfo.size < 14) {
+        log.debug('ArtPoll to small');
+        return;
+      }
       log.debug('detected ArtPoll');
       // Parse Protocol version
       var proto = parseInt(jspack.Unpack('B', msg, 10), 10);
@@ -279,6 +439,8 @@ var dataParser = function(msg, rinfo, parent) {
       ctrl.diagnostic_unicast = ((ttm_raw & 0b00001000) > 0);
       ctrl.diagnostic_enable = ((ttm_raw & 0b00000100) > 0);
       ctrl.unilateral = ((ttm_raw & 0b00000010) > 0);
+      // Priority
+      ctrl.priority = parseInt(jspack.Unpack('B', msg, 13), 10);
       // Insert into controller's reference
       var done = false;
       for (var index = 0; index < parent.controllers.length; ++index) {
@@ -290,6 +452,7 @@ var dataParser = function(msg, rinfo, parent) {
       if (done !== true) {
         parent.controllers.push(ctrl);
       }
+      parent.ArtPollReply();
       log.debug('Controllers: ' + JSON.stringify(parent.controllers));
       break;
     case 0x2100:

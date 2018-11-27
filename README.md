@@ -1,11 +1,13 @@
 # dmxnet
-[![GitHub release](https://img.shields.io/github/release/margau/dmxnet.svg)](https://github.com/margau/dmxnet)
-[![npm](https://img.shields.io/npm/v/dmxnet.svg)](https://github.com/margau/dmxnet)
+[![GitHub release](https://img.shields.io/github/release/margau/dmxnet.svg)](https://github.com/margau/dmxnet/releases)
+[![npm](https://img.shields.io/npm/v/dmxnet.svg)](https://www.npmjs.com/package/dmxnet)
 [![GitHub issues](https://img.shields.io/github/issues/margau/dmxnet.svg)](https://github.com/margau/dmxnet/issues)
 [![GitHub stars](https://img.shields.io/github/stars/margau/dmxnet.svg)](https://github.com/margau/dmxnet/stargazers)
 [![GitHub license](https://img.shields.io/github/license/margau/dmxnet.svg)](https://github.com/margau/dmxnet/blob/master/LICENSE)
-[![Github All Releases](https://img.shields.io/github/downloads/margau/dmxnet/total.svg)](https://github.com/margau/dmxnet)
-[![npm](https://img.shields.io/npm/dt/dmxnet.svg)](https://github.com/margau/dmxnet)
+[![GitHub last commit](https://img.shields.io/github/last-commit/margau/dmxnet.svg)](https://github.com/margau/dmxnet)
+[![Github All Releases](https://img.shields.io/github/downloads/margau/dmxnet/total.svg)](https://github.com/margau/dmxnet/releases)
+[![npm](https://img.shields.io/npm/dt/dmxnet.svg)](https://www.npmjs.com/package/dmxnet)
+[![Travis (.com)](https://img.shields.io/travis/com/margau/dmxnet.svg)](https://travis-ci.com/margau/dmxnet)
 
 dmxnet is an ArtNet-DMX-sender and receiver for nodejs,
 currently under heavy development!
@@ -30,13 +32,13 @@ Initital Release, sending ArtDMX working
 **How to install latest release:**
 
 ```bash
-npm install dmxnet 
+npm install dmxnet
 ```
 
 **How to install current development version:**
 
 ```bash
-npm install git+https://git@github.com/margau/dmxnet.git 
+npm install git+https://git@github.com/margau/dmxnet.git
 ```
 
 ## Usage
@@ -60,15 +62,29 @@ Options:
 ```javascript
 {
   verbose: 1, //Verbosity, default 0
-  oem: 0 //OEM Code from artisticlicense, default to dmxnet OEM
+  oem: 0, //OEM Code from artisticlicense, default to dmxnet OEM.
+  sName: "Text", // 17 char long node description, default to "dmxnet"
+  lName: "Long description" // 63 char long node description, default to "dmxnet - OpenSource ArtNet Transceiver"
 }
 ```
 
+### Structure
+dmxnet works with objects:
+You can create new Sender or Receiver objects at any time,
+each transmitting or receiving data for a single ArtNet-Universe.
+
+Each combination of net, subnet and universe is possible.
+
+### Notes
+dmxnet can propagate max. 255 Sender/Receiver-Objects to other nodes.
+This is a limitation based on the internal structure of ArtPollReply-Packages.
+**You can of course use more Sender/Receiver-Objects, but they won't propagate
+trough ArtPoll.**
 ### Transmitting Art-Net
 
 **Create new sender object:**
 
-```javascript 
+```javascript
 var sender=dmxnet.newSender(options);
 ```
 
@@ -108,7 +124,7 @@ sender.prepChannel(channel,value);
 
 Prepares *channel* (0-511) to *value* (0-255) without transmitting.
 
-Change is transmitted with next 
+Change is transmitted with next
 ```javascript
 sender.transmit();
 ```
@@ -130,9 +146,7 @@ Transmits a new ArtDMX Frame manually.
 ## ToDo:
 
 - Receiving ArtDmx
-- Receiving ArtPoll
-- Sending ArtPollReply
-- Act as Controller (Sending ArtPoll)
+- Act as Controller (Sending ArtPoll, Receiving ArtPollReply)
 - Maybe support sACN?
 
 
