@@ -300,7 +300,7 @@ dmxnet.prototype.ArtPollReply = function() {
         sourceip.split('.')[0], sourceip.split('.')[1],
         sourceip.split('.')[2], sourceip.split('.')[3],
         // BindIndex, Status2
-        1, 0,
+        1, 0b00000110,
       ]));
     log.debug('Packet content: ' + udppacket.toString('hex'));
     // Send UDP
