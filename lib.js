@@ -20,6 +20,8 @@ function dmxnet(options) {
   this.verbose = options.verbose || 0;
   this.oem = options.oem || 0x2908; // OEM code hex
   this.port = options.listen || 6454; // Port listening for incoming data
+	this.sName = options.sName || "dmxnet"; // Shortname
+	this.lName = options.lName || "dmxnet - OpenSource ArtNet Transceiver"; // Longname
   // Set log levels
   if (this.verbose > 0) {
     log.setLevel('info');
@@ -51,6 +53,8 @@ function dmxnet(options) {
     });
   });
   log.debug('Interfaces: ' + JSON.stringify(this.ip4));
+	// init artPollReplyCount
+	this.artPollReplyCount = 0;
   // Array containing reference to foreign controllers
   this.controllers = [];
   // Array containing reference to foreign node's
@@ -263,12 +267,13 @@ function isBroadcast(ipaddress) {
 // ArtPollReply
 dmxnet.prototype.ArtPollReply = function() {
   log.debug('Send ArtPollReply');
+
   this.ip4.forEach((ip) => {
     var ArtPollReplyFormat = '!7sBHBBBBHHBBHBBH18s64s64sH4B4B4B4B4B3HB6B4BBB';
     var netSwitch = 0x01;
     var subSwitch = 0x01;
     var status = 0;
-    var stateString = '#0000 [0000] Running';
+    var stateString = '#0001 ['+("000" + this.artPollReplyCount).slice(-4)+'] dmxnet ArtNet-Transceiver running';
     var portType = 0b01000000;
     var sourceip = ip.ip;
     var broadcastip = ip.broadcast;
@@ -283,15 +288,15 @@ dmxnet.prototype.ArtPollReply = function() {
         // Ubea, status1, 2 bytes ESTA
         0, status, 0,
         // short name (18), long name (63), stateString (63)
-        'dmxnet node', 'dmxnet nodejs artnet', stateString,
+        this.sName.substring(0,16), this.lName.substring(0,63), stateString,
         // 2 bytes num ports, 4*portTypes
         4, portType, portType, portType, portType,
         // 4*goodInput, 4*goodOutput
-        0, 0, 0, 0, 0, 0, 0, 0,
+        0b10000000, 0, 0, 0, 0b1000000, 0, 0, 0,
         // 4*SW IN, 4*SW OUT
         0, 1, 2, 3, 0, 1, 2, 3,
-        // 6* deprecated/spare
-        0, 0, 0, 0,
+        // 5* deprecated/spare, style
+        0, 0, 0, 0x01,
         // MAC address
         parseInt(ip.mac.split(':')[0], 16), parseInt(ip.mac.split(':')[1], 16),
         parseInt(ip.mac.split(':')[2], 16), parseInt(ip.mac.split(':')[3], 16),
@@ -311,6 +316,10 @@ dmxnet.prototype.ArtPollReply = function() {
         log.info('ArtPollReply frame sent');
       });
   });
+	this.artPollReplyCount++;
+	if(this.artPollReplyCount>9999) {
+		this.artPollReplyCount=0;
+	}
 };
 // Parser & receiver
 var dataParser = function(msg, rinfo, parent) {
