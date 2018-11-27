@@ -18,7 +18,7 @@ var ArtDmxPayloadFormat = '512B';
 function dmxnet(options) {
   // Parse all options and set defaults
   this.verbose = options.verbose || 0;
-  this.oem = options.oem || 2908; // OEM code hex
+  this.oem = options.oem || 0x2908; // OEM code hex
   this.port = options.listen || 6454; // Port listening for incoming data
   // Set log levels
   if (this.verbose > 0) {
@@ -181,9 +181,9 @@ sender.prototype.transmit = function() {
     // SubnetUniverseNet Int16, Length Int16
     var udppacket = Buffer.from(jspack.Pack(ArtDmxHeaderFormat +
       ArtDmxPayloadFormat,
-      ['Art-Net', 0, 0x0050, 14, this.ArtDmxSeq, 0, this.subuni,
-        this.net, 512,
-      ].concat(this.values)));
+    ['Art-Net', 0, 0x0050, 14, this.ArtDmxSeq, 0, this.subuni,
+      this.net, 512,
+    ].concat(this.values)));
     // Increase Sequence Counter
     this.ArtDmxSeq++;
 
@@ -261,22 +261,42 @@ function isBroadcast(ipaddress) {
 }
 // ArtPollReply
 dmxnet.prototype.ArtPollReply = function() {
-  var ArtPollReplyFormat = "!7sBHBBBBHHBBHBBH18s64s64sH4B4B4B4B4B3HB6B4BBB";
-  log.debug("Send ArtPollReply");
-  var sourceip = "0.0.0.0";
-	var broadcastip = "255.255.255.255";
-	var netSwitch = 0x01;
-	var subSwitch = 0x01;
-	var status = 0;
-	var stateString = "#0000 [0000] Running"
-	var portType = 0b01000000;
+  var ArtPollReplyFormat = '!7sBHBBBBHHBBHBBH18s64s64sH4B4B4B4B4B3HB6B4BBB26B';
+  log.debug('Send ArtPollReply');
+  var sourceip = '0.0.0.0';
+  var broadcastip = '255.255.255.255';
+  var netSwitch = 0x01;
+  var subSwitch = 0x01;
+  var status = 0;
+  var stateString = '#0000 [0000] Running';
+  var portType = 0b01000000;
   var udppacket = Buffer.from(jspack.Pack(
     ArtPollReplyFormat,
-    ['Art-Net', 0, 0x0021, sourceip.split('.')[0], sourceip.split('.')[1], sourceip.split('.')[2], sourceip.split('.')[3], this.port,
-	0x0001, netSwitch, subSwitch, this.oem,0,status,0,"dmxnet node","dmxnet nodejs artnet",stateString,
-4,portType,portType,portType,portType,0,0,0,0,0,0,0,0,0,1,2,3,0,1,2,3,0,0,0,0,
-0,0,0,0,0,0,sourceip.split('.')[0], sourceip.split('.')[1], sourceip.split('.')[2], sourceip.split('.')[3],
-1,0]));
+    ['Art-Net', 0, 0x0021,
+      // 4 bytes source ip + 2 bytes port
+      sourceip.split('.')[0], sourceip.split('.')[1],
+      sourceip.split('.')[2], sourceip.split('.')[3], this.port,
+      // 2 bytes Firmware version, netSwitch, subSwitch, OEM-Code
+      0x0001, netSwitch, subSwitch, this.oem,
+			// Ubea, status1, 2 bytes ESTA
+			0, status, 0,
+			// short name (18), long name (63), stateString (63)
+			'dmxnet node', 'dmxnet nodejs artnet', stateString,
+			// 2 bytes num ports, 4*portTypes
+      4, portType, portType, portType, portType,
+			// 4*goodInput, 4*goodOutput
+      0, 0, 0, 0, 0, 0, 0, 0,
+			// 4*SW IN, 4*SW OUT
+			0, 1, 2, 3, 0, 1, 2, 3,
+			// 6* deprecated/spare
+			0, 0, 0, 0,
+			// MAC address
+      0, 0, 0, 0, 0, 0,
+			// BindIP
+      sourceip.split('.')[0], sourceip.split('.')[1],
+      sourceip.split('.')[2], sourceip.split('.')[3],
+			// BindIndex, Status2
+			1, 0]));
   log.debug('Packet content: ' + udppacket.toString('hex'));
   // Send UDP
   var client = this.socket;
@@ -285,7 +305,7 @@ dmxnet.prototype.ArtPollReply = function() {
       if (err) throw err;
       log.info('ArtPollReply frame sent');
     });
-}
+};
 // Parser & receiver
 var dataParser = function(msg, rinfo, parent) {
   log.debug(`got UDP from ${rinfo.address}:${rinfo.port}`);
