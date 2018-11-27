@@ -20,8 +20,9 @@ function dmxnet(options) {
   this.verbose = options.verbose || 0;
   this.oem = options.oem || 0x2908; // OEM code hex
   this.port = options.listen || 6454; // Port listening for incoming data
-	this.sName = options.sName || "dmxnet"; // Shortname
-	this.lName = options.lName || "dmxnet - OpenSource ArtNet Transceiver"; // Longname
+  this.sName = options.sName || 'dmxnet'; // Shortname
+  this.lName = options.lName ||
+	'dmxnet - OpenSource ArtNet Transceiver'; // Longname
   // Set log levels
   if (this.verbose > 0) {
     log.setLevel('info');
@@ -53,8 +54,8 @@ function dmxnet(options) {
     });
   });
   log.debug('Interfaces: ' + JSON.stringify(this.ip4));
-	// init artPollReplyCount
-	this.artPollReplyCount = 0;
+  // init artPollReplyCount
+  this.artPollReplyCount = 0;
   // Array containing reference to foreign controllers
   this.controllers = [];
   // Array containing reference to foreign node's
@@ -273,7 +274,8 @@ dmxnet.prototype.ArtPollReply = function() {
     var netSwitch = 0x01;
     var subSwitch = 0x01;
     var status = 0b11010000;
-    var stateString = '#0001 ['+("000" + this.artPollReplyCount).slice(-4)+'] dmxnet ArtNet-Transceiver running';
+    var stateString = '#0001 [' + ('000' + this.artPollReplyCount).slice(-4)
+		+ '] dmxnet ArtNet-Transceiver running';
     var portType = 0b01000000;
     var sourceip = ip.ip;
     var broadcastip = ip.broadcast;
@@ -288,7 +290,7 @@ dmxnet.prototype.ArtPollReply = function() {
         // Ubea, status1, 2 bytes ESTA
         0, status, 0,
         // short name (18), long name (63), stateString (63)
-        this.sName.substring(0,16), this.lName.substring(0,63), stateString,
+        this.sName.substring(0, 16), this.lName.substring(0, 63), stateString,
         // 2 bytes num ports, 4*portTypes
         4, portType, portType, portType, portType,
         // 4*goodInput, 4*goodOutput
@@ -316,10 +318,10 @@ dmxnet.prototype.ArtPollReply = function() {
         log.info('ArtPollReply frame sent');
       });
   });
-	this.artPollReplyCount++;
-	if(this.artPollReplyCount>9999) {
-		this.artPollReplyCount=0;
-	}
+  this.artPollReplyCount++;
+  if (this.artPollReplyCount > 9999) {
+    this.artPollReplyCount = 0;
+  }
 };
 // Parser & receiver
 var dataParser = function(msg, rinfo, parent) {
