@@ -68,6 +68,18 @@ Options:
 }
 ```
 
+### Structure
+dmxnet works with objects:
+You can create new Sender or Receiver objects at any time,
+each transmitting or receiving data for a single ArtNet-Universe.
+
+Each combination of net, subnet and universe is possible.
+
+### Notes
+dmxnet can propagate max. 255 Sender/Receiver-Objects to other nodes.
+This is a limitation based on the internal structure of ArtPollReply-Packages.
+**You can of course use more Sender/Receiver-Objects, but they won't propagate
+trough ArtPoll.**
 ### Transmitting Art-Net
 
 **Create new sender object:**
@@ -134,9 +146,7 @@ Transmits a new ArtDMX Frame manually.
 ## ToDo:
 
 - Receiving ArtDmx
-- Receiving ArtPoll
-- Sending ArtPollReply
-- Act as Controller (Sending ArtPoll)
+- Act as Controller (Sending ArtPoll, Receiving ArtPollReply)
 - Maybe support sACN?
 
 
