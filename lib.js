@@ -295,7 +295,7 @@ dmxnet.prototype.ArtPollReply = function() {
     var broadcastip = ip.broadcast;
     // one packet for each sender
     this.senders.forEach((s) => {
-      var portType = 0b01000000;
+      var portType = 0b10000000;
       var udppacket = Buffer.from(jspack.Pack(
         ArtPollReplyFormat,
         ['Art-Net', 0, 0x0021,
