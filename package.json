@@ -27,10 +27,10 @@
   "dependencies": {
     "jspack": "0.0.4",
     "netmask": "^1.0.6",
-    "simple-node-logger": "^0.93.37"
+    "simple-node-logger": "^0.93.42"
   },
   "devDependencies": {
-    "eslint": "^5.9.0",
+    "eslint": "^5.16.0",
     "eslint-config-strongloop": "^2.1.0"
   }
 }
