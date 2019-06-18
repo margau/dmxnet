@@ -178,7 +178,7 @@ var sender = function(opt, parent) {
   this.transmit();
 
 
-  // Send Frame in regular intervals (as given in base_refresh_interval) - even there was no channel changed
+  // Send Frame every base_refresh_interval ms - even if no channel was changed
   this.interval = setInterval(() => {
     this.transmit();
   }, this.base_refresh_interval);
