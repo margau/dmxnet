@@ -251,6 +251,14 @@ sender.prototype.fillChannels = function(start, stop, value) {
   }
   this.transmit();
 };
+// Reset function
+sender.prototype.reset = function() {
+  // Reset all 512 channels of the sender to zero
+  for (var i = 0; i < 512; i++) {
+    this.values[i] = 0;
+  }
+  this.transmit();
+};
 // Stop sender
 sender.prototype.stop = function() {
   clearInterval(this.interval);
