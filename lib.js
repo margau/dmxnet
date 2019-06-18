@@ -129,6 +129,7 @@ var sender = function(opt, parent) {
   this.ip = options.ip || '255.255.255.255';
   this.port = options.port || 6454;
   this.verbose = this.parent.verbose;
+  this.base_refresh_interval = options.base_refresh_interval || 1000;
 
   // Validate Input
   if (this.net > 127) {
@@ -177,10 +178,10 @@ var sender = function(opt, parent) {
   this.transmit();
 
 
-  // Send Frame all 1000ms even there is no channel change
+  // Send Frame in regular intervals (as given in base_refresh_interval) - even there was no channel changed
   this.interval = setInterval(() => {
     this.transmit();
-  }, 1000);
+  }, this.base_refresh_interval);
 };
 // Transmit function
 sender.prototype.transmit = function() {
