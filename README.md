@@ -23,7 +23,7 @@ Only the sender could be considered working by now.
 
 
 ## Changelog
-**v0.2.5**
+**v0.3.0**
 Added support for base_refresh_interval, add sender.reset()
 
 **v0.2.0**
