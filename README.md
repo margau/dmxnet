@@ -23,6 +23,9 @@ Only the sender could be considered working by now.
 
 
 ## Changelog
+**v0.2.5**
+Added support for base_refresh_interval, add sender.reset()
+
 **v0.2.0**
 
 Added support for receiving ArtPoll and sending ArtPollReply.
@@ -108,7 +111,8 @@ Options:
   subnet: 0, //Destination subnet, default 0
   universe: 0, //Destination universe, default 0
   net: 0, //Destination net, default 0
-  port: 6454 //Destination UDP Port, default 6454
+  port: 6454, //Destination UDP Port, default 6454
+  base_refresh_interval: 1000 // Default interval for sending unchanged ArtDmx
 }
 ```
 
@@ -150,8 +154,13 @@ sender.transmit();
 
 Transmits a new ArtDMX Frame manually.
 
+**Reset:**
 
+```javascript
+sender.reset();
+```
 
+Resets all channels of this sender object to zero.
 
 **Please Note: dmxnet transmits a dmx-frame every 1000ms even if no channel has changed its value!**
 
