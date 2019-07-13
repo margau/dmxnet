@@ -25,9 +25,9 @@
   },
   "homepage": "https://github.com/margau/dmxnet#readme",
   "dependencies": {
+    "@hibas123/nodelogging": "^2.0.6",
     "jspack": "0.0.4",
-    "netmask": "^1.0.6",
-    "simple-node-logger": "^0.93.42"
+    "netmask": "^1.0.6"
   },
   "devDependencies": {
     "eslint": "^5.16.0",

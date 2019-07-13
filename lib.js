@@ -4,10 +4,12 @@ var dgram = require('dgram');
 var jspack = require('jspack').jspack;
 const os = require('os');
 const Netmask = require('netmask').Netmask;
-// Require Logger
-const manager = require('simple-node-logger').createLogManager();
+// Require Logging
+const LoggingBase = require('@hibas123/nodelogging').LoggingBase;
 // Init Logger
-const log = manager.createLogger('dmxnet');
+const log = new LoggingBase({
+  name: 'dmxnet',
+});
 
 // ArtDMX Header for jspack
 var ArtDmxHeaderFormat = '!7sBHHBBBBH';
@@ -25,15 +27,15 @@ function dmxnet(options) {
     'dmxnet - OpenSource ArtNet Transceiver'; // Longname
   // Set log levels
   if (this.verbose > 0) {
-    log.setLevel('info');
+    // ToDo: Set Log Level
     if (this.verbose > 1) {
-      log.setLevel('debug');
+      // ToDo: Set Log Level Debug
     }
   } else {
-    log.setLevel('warn');
+    // ToDo: Set Log Level
   }
   // Log started information
-  log.info('started with options ' + JSON.stringify(options));
+  log.log('started with options ' + JSON.stringify(options));
 
   // Get all network interfaces
   this.interfaces = os.networkInterfaces();
@@ -84,7 +86,7 @@ function dmxnet(options) {
   });
   // Start listening
   this.listener4.bind(this.port);
-  log.info('Listening on port ' + this.port);
+  log.log('Listening on port ' + this.port);
   // Open Socket for sending broadcast data
   this.socket = dgram.createSocket('udp4');
   this.socket.bind(() => {
@@ -145,7 +147,7 @@ var sender = function(opt, parent) {
     throw new Error('Subnet, Net or Universe must be 0 or bigger!');
   }
   if (this.verbose > 0) {
-    log.info('new dmxnet sender started with params: ' +
+    log.log('new dmxnet sender started with params: ' +
       JSON.stringify(options));
   }
   // init dmx-value array
@@ -207,7 +209,7 @@ sender.prototype.transmit = function() {
     client.send(udppacket, 0, udppacket.length, this.port, this.ip,
       (err, bytes) => {
         if (err) throw err;
-        log.info('ArtDMX frame sent to ' + this.ip + ':' + this.port);
+        log.log('ArtDMX frame sent to ' + this.ip + ':' + this.port);
       });
   }
 };
@@ -348,7 +350,7 @@ dmxnet.prototype.ArtPollReply = function() {
       client.send(udppacket, 0, udppacket.length, 6454, broadcastip,
         (err, bytes) => {
           if (err) throw err;
-          log.info('ArtPollReply frame sent');
+          log.log('ArtPollReply frame sent');
         });
     });
     if (this.senders.length < 1) {
@@ -392,7 +394,7 @@ dmxnet.prototype.ArtPollReply = function() {
       client.send(udppacket, 0, udppacket.length, 6454, broadcastip,
         (err, bytes) => {
           if (err) throw err;
-          log.info('ArtPollReply frame sent');
+          log.log('ArtPollReply frame sent');
         });
     }
   });
