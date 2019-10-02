@@ -23,6 +23,9 @@ Only the sender could be considered working by now.
 
 
 ## Changelog
+**v0.4.0**
+Added support for receiving ArtDMX packets. 
+
 **v0.3.0**
 Added support for base_refresh_interval, add sender.reset()
 
@@ -166,7 +169,6 @@ Resets all channels of this sender object to zero.
 
 ## ToDo:
 
-- Receiving ArtDmx
 - Act as Controller (Sending ArtPoll, Receiving ArtPollReply)
 - Maybe support sACN?
 
