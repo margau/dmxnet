@@ -121,6 +121,14 @@ dmxnet.prototype.newSender = function(options) {
   return s;
 };
 
+// get a new receiver object
+dmxnet.prototype.newReceiver = function(options) {
+  var r = new receiver(options, this);
+  this.receivers.push(r);
+  this.ArtPollReply();
+  return r;
+};
+
 // define sender with user options and inherited parent object
 var sender = function(opt, parent) {
   // save parent object
@@ -294,6 +302,49 @@ function isBroadcast(ipaddress) {
   }
   return false;
 }
+
+// Receiver
+var receiver = function(opt, parent) {
+  // save parent object
+  this.parent = parent;
+
+  // set options
+  var options = opt || {};
+  this.net = options.net || 0;
+  this.subnet = options.subnet || 0;
+  this.universe = options.universe || 0;
+  this.subuni = options.subuni;
+  this.verbose = this.parent.verbose;
+
+  // Validate Input
+  if (this.net > 127) {
+    throw new Error('Invalid Net, must be smaller than 128');
+  }
+  if (this.universe > 15) {
+    throw new Error('Invalid Universe, must be smaller than 16');
+  }
+  if (this.subnet > 15) {
+    throw new Error('Invalid subnet, must be smaller than 16');
+  }
+  if ((this.net < 0) || (this.subnet < 0) || (this.universe < 0)) {
+    throw new Error('Subnet, Net or Universe must be 0 or bigger!');
+  }
+  if (this.verbose > 0) {
+    log.log('new dmxnet sender started with params: ' +
+      JSON.stringify(options));
+  }
+  // init dmx-value array
+  this.values = [];
+  // fill all 512 channels
+  for (var i = 0; i < 512; i++) {
+    this.values[i] = 0;
+  }
+  // Build Subnet/Universe/Net Int16
+  if (!this.subuni) {
+    this.subuni = (this.subnet << 4) | (this.universe);
+  }
+};
+
 // ArtPollReply
 dmxnet.prototype.ArtPollReply = function() {
   log.debug('Send ArtPollReply');
