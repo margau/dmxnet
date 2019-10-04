@@ -490,12 +490,12 @@ var dataParser = function(msg, rinfo, parent) {
   switch (opcode) {
     case 0x5000:
       log.debug('detected ArtDMX');
-      var universe = parseInt(jspack.Unpack('H', msg, 14));
+      var universe = parseInt(jspack.Unpack('H', msg, 14), 10);
       var data = [];
       for (var ch = 1; ch < msg.length - 18; ch++) {
         data.push(msg.readUInt8(ch + 17, true));
       }
-      log.debug("Received frame for SubUniNet 0x"+universe.toString(16));
+      log.debug('Received frame for SubUniNet 0x' + universe.toString(16));
       if (parent.receiversSubUni[universe]) {
         parent.receiversSubUni[universe].receive(data);
       }
