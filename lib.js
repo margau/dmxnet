@@ -344,14 +344,15 @@ var receiver = function(opt, parent) {
   if (!this.subuni) {
     this.subuni = (this.subnet << 4) | (this.universe);
   }
+  this.subuninet = (this.subuni << 8) | this.net;
   // Insert this object into the map
-  parent.receiversSubUni[this.subuni] = this;
+  parent.receiversSubUni[this.subuninet] = this;
 };
 util.inherits(receiver, EventEmitter);
 // Handle received packets
 receiver.prototype.receive = function(data) {
   this.values = data;
-  this.emit('Received', data);
+  this.emit('data', data);
 };
 
 // ArtPollReply
@@ -489,11 +490,12 @@ var dataParser = function(msg, rinfo, parent) {
   switch (opcode) {
     case 0x5000:
       log.debug('detected ArtDMX');
-      var universe = jspack.Unpack('<2B', msg, 15);
+      var universe = parseInt(jspack.Unpack('H', msg, 14));
       var data = [];
       for (var ch = 1; ch < msg.length - 18; ch++) {
         data.push(msg.readUInt8(ch + 17, true));
       }
+      log.debug("Received frame for SubUniNet 0x"+universe.toString(16));
       if (parent.receiversSubUni[universe]) {
         parent.receiversSubUni[universe].receive(data);
       }
