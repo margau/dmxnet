@@ -68,6 +68,8 @@ function dmxnet(options) {
   this.senders = [];
   // Array containing reference to receiver objects
   this.receivers = [];
+  // Object containing reference to receivers by SubnetUniverseNet
+  this.receiversSubUni = {};
   // Timestamp of last Art-Poll send
   this.last_poll;
   // Create listener for incoming data
@@ -110,7 +112,6 @@ function dmxnet(options) {
   }, 30000);
   return this;
 }
-util.inherits(dmxnet, EventEmitter);
 
 // get a new sender object
 dmxnet.prototype.newSender = function(options) {
@@ -343,6 +344,14 @@ var receiver = function(opt, parent) {
   if (!this.subuni) {
     this.subuni = (this.subnet << 4) | (this.universe);
   }
+  // Insert this object into the map
+  parent.receiversSubUni[this.subuni] = this;
+};
+util.inherits(receiver, EventEmitter);
+// Handle received packets
+receiver.prototype.receive = function(data) {
+  this.values = data;
+  this.emit('Received', data);
 };
 
 // ArtPollReply
@@ -481,12 +490,13 @@ var dataParser = function(msg, rinfo, parent) {
     case 0x5000:
       log.debug('detected ArtDMX');
       var universe = jspack.Unpack('<2B', msg, 15);
-      var data = {};
+      var data = [];
       for (var ch = 1; ch < msg.length - 18; ch++) {
-        var val = msg.readUInt8(ch + 17, true);
-        if (val > 0) data[ch] = val;
+        data.push(msg.readUInt8(ch + 17, true));
       }
-      // ToDo: Push to receiver
+      if (parent.receiversSubUni[universe]) {
+        parent.receiversSubUni[universe].receive(data);
+      }
       break;
     case 0x2000:
       if (rinfo.size < 14) {
