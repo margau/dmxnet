@@ -20,7 +20,6 @@ var ArtDmxPayloadFormat = '512B';
 
 // dmxnet constructor
 function dmxnet(options) {
-  EventEmitter.call(this);
   // Parse all options and set defaults
   this.verbose = options.verbose || 0;
   this.oem = options.oem || 0x2908; // OEM code hex
@@ -305,6 +304,7 @@ function isBroadcast(ipaddress) {
 
 // Receiver
 var receiver = function(opt, parent) {
+  EventEmitter.call(this);
   // save parent object
   this.parent = parent;
 
@@ -486,7 +486,7 @@ var dataParser = function(msg, rinfo, parent) {
         var val = msg.readUInt8(ch + 17, true);
         if (val > 0) data[ch] = val;
       }
-      parent.emit('ArtDMX', { universe, data });
+      // ToDo: Push to receiver
       break;
     case 0x2000:
       if (rinfo.size < 14) {
