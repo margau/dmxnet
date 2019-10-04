@@ -419,8 +419,57 @@ dmxnet.prototype.ArtPollReply = function() {
           log.log('ArtPollReply frame sent');
         });
     });
-    if (this.senders.length < 1) {
-      // No senders available, propagate as "empty"
+    // Send one package for every receiver
+    this.receivers.forEach((r) => {
+      var portType = 0b10000000;
+      var udppacket = Buffer.from(jspack.Pack(
+        ArtPollReplyFormat,
+        ['Art-Net', 0, 0x0021,
+          // 4 bytes source ip + 2 bytes port
+          sourceip.split('.')[0], sourceip.split('.')[1],
+          sourceip.split('.')[2], sourceip.split('.')[3], this.port,
+          // 2 bytes Firmware version, netSwitch, subSwitch, OEM-Code
+          0x0001, r.net, r.subnet, this.oem,
+          // Ubea, status1, 2 bytes ESTA
+          0, status, 0,
+          // short name (18), long name (63), stateString (63)
+          this.sName.substring(0, 16), this.lName.substring(0, 63), stateString,
+          // 2 bytes num ports, 4*portTypes
+          1, portType, 0, 0, 0,
+          // 4*goodInput, 4*goodOutput
+          0, 0, 0, 0, 0b10000000, 0, 0, 0,
+          // 4*SW IN, 4*SW OUT
+          0, 0, 0, 0, r.universe, 0, 0, 0,
+          // 5* deprecated/spare, style
+          0, 0, 0, 0x01,
+          // MAC address
+          parseInt(ip.mac.split(':')[0], 16),
+          parseInt(ip.mac.split(':')[1], 16),
+          parseInt(ip.mac.split(':')[2], 16),
+          parseInt(ip.mac.split(':')[3], 16),
+          parseInt(ip.mac.split(':')[4], 16),
+          parseInt(ip.mac.split(':')[5], 16),
+          // BindIP
+          sourceip.split('.')[0], sourceip.split('.')[1],
+          sourceip.split('.')[2], sourceip.split('.')[3],
+          // BindIndex, Status2
+          bindIndex, 0b00001110,
+        ]));
+      // Increase bindIndex
+      bindIndex++;
+      if (bindIndex > 255) {
+        bindIndex = 1;
+      }
+      // Send UDP
+      var client = this.socket;
+      client.send(udppacket, 0, udppacket.length, 6454, broadcastip,
+        (err, bytes) => {
+          if (err) throw err;
+          log.log('ArtPollReply frame sent');
+        });
+    });
+    if ((this.senders.length + this.receivers.length) < 1) {
+      // No senders and receivers available, propagate as "empty"
       var udppacket = Buffer.from(jspack.Pack(
         ArtPollReplyFormat,
         ['Art-Net', 0, 0x0021,
