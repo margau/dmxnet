@@ -13,5 +13,5 @@ var receiver = dmxnet.newReceiver({
 
 // Dump data if DMX Data is received
 receiver.on('data', function(data) {
-  console.log('DMX data:', data);
+  console.log('DMX data:', data); // eslint-disable-line no-console
 });

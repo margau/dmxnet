@@ -220,7 +220,7 @@ sender.prototype.transmit = function() {
     // Send UDP
     var client = this.socket;
     client.send(udppacket, 0, udppacket.length, this.port, this.ip,
-      (err, bytes) => {
+      (err) => {
         if (err) throw err;
         log.log('ArtDMX frame sent to ' + this.ip + ':' + this.port);
       });
@@ -248,7 +248,7 @@ sender.prototype.prepChannel = function(channel, value) {
   this.values[channel] = value;
 };
 // SetChannels
-sender.prototype.setChannels = function(channels) {
+sender.prototype.setChannels = function() {
 
 };
 // Fill Channels
@@ -278,7 +278,7 @@ sender.prototype.reset = function() {
 // Stop sender
 sender.prototype.stop = function() {
   clearInterval(this.interval);
-  this.parent.senders = this.parent.senders.filter(function(value, index, arr) {
+  this.parent.senders = this.parent.senders.filter(function(value) {
     if (value === this) {
       return false;
     }
@@ -414,7 +414,7 @@ dmxnet.prototype.ArtPollReply = function() {
       // Send UDP
       var client = this.socket;
       client.send(udppacket, 0, udppacket.length, 6454, broadcastip,
-        (err, bytes) => {
+        (err) => {
           if (err) throw err;
           log.log('ArtPollReply frame sent');
         });
@@ -463,7 +463,7 @@ dmxnet.prototype.ArtPollReply = function() {
       // Send UDP
       var client = this.socket;
       client.send(udppacket, 0, udppacket.length, 6454, broadcastip,
-        (err, bytes) => {
+        (err) => {
           if (err) throw err;
           log.log('ArtPollReply frame sent');
         });
@@ -507,7 +507,7 @@ dmxnet.prototype.ArtPollReply = function() {
       // Send UDP
       var client = this.socket;
       client.send(udppacket, 0, udppacket.length, 6454, broadcastip,
-        (err, bytes) => {
+        (err) => {
           if (err) throw err;
           log.log('ArtPollReply frame sent');
         });
