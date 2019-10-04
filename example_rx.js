@@ -7,3 +7,8 @@ var dmxnet = new dmxlib.dmxnet({verbose: 2});
 setInterval(function() {
   console.log(dmxnet.controllers);
 }, 30000);
+
+dmxnet.on('ArtDMX', function({ universe, data }) {
+  console.log('DMX universe:', universe);
+  console.log('DMX data:', data);
+});
