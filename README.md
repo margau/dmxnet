@@ -12,19 +12,20 @@
 dmxnet is an ArtNet-DMX-sender and receiver for nodejs,
 currently under heavy development!
 
-Only the sender could be considered working by now.
-
 ## Features
 
 - Send DMX-Data as ArtNet
 - Use multiple senders with different Net, Subnet and Universe-Settings
+- Receive ArtNet-Data
+- Use multiple receivers with different Net, Subnet and Universe
 - Receive ArtPoll and send ArtPollReply (dmxnet is found by other software, e.g. [DMX-Workshop](https://art-net.org.uk/resources/dmx-workshop/))
 
-
+## Contributors
+See https://github.com/margau/dmxnet/graphs/contributors
 
 ## Changelog
 **v0.4.0**
-Added support for receiving ArtDMX packets. 
+Added support for receiving ArtDMX packets.
 
 **v0.3.0**
 Added support for base_refresh_interval, add sender.reset()
@@ -88,7 +89,7 @@ Options:
 
 ### Structure
 dmxnet works with objects:
-You can create new Sender or Receiver objects at any time,
+You can create a new Sender or Receiver-instance at any time,
 each transmitting or receiving data for a single ArtNet-Universe.
 
 Each combination of net, subnet and universe is possible.
@@ -166,6 +167,36 @@ sender.reset();
 Resets all channels of this sender object to zero.
 
 **Please Note: dmxnet transmits a dmx-frame every 1000ms even if no channel has changed its value!**
+
+### Receiving Art-Net
+
+**Create a new receiver-instance:**
+
+```javascript
+var receiver=dmxnet.newReceiver(options);
+```
+
+Options:
+
+```javascript
+{
+  subnet: 0, //Destination subnet, default 0
+  universe: 0, //Destination universe, default 0
+  net: 0, //Destination net, default 0
+}
+```
+
+**Wait for a new frame:**
+
+```javascript
+receiver.on('data', function(data) {
+  console.log('DMX data:', data);
+});
+```
+
+The receiver is emits an "data"-event each time new values have arrived.
+
+The current values are stored inside the `receiver.values`-array for polling.
 
 ## ToDo:
 
