@@ -17,8 +17,13 @@ var ArtDmxHeaderFormat = '!7sBHHBBBBH';
 // ArtDMX Payload for jspack
 var ArtDmxPayloadFormat = '512B';
 
-// dmxnet constructor
+/** Class representing the core dmxnet structure */
 class dmxnet {
+  /**
+   * Creates a new dmxnet instance
+   *
+   * @param {object} options - Options for the whole instance
+   */
   constructor(options) {
     // Parse all options and set defaults
     this.verbose = options.verbose || 0;
@@ -113,7 +118,12 @@ class dmxnet {
     return this;
   }
 
-  // get a new sender object
+  /**
+   * Returns a new sender instance
+   *
+   * @param {object} options - Options for the new sender
+   * @returns {sender} - Instance of Sender
+   */
   newSender(options) {
     var s = new sender(options, this);
     this.senders.push(s);
@@ -121,7 +131,12 @@ class dmxnet {
     return s;
   }
 
-  // get a new receiver object
+  /**
+   * Returns a new receiver instance
+   *
+   * @param {object} options - Options for the new receiver
+   * @returns {receiver} - Instance of Receiver
+   */
   newReceiver(options) {
     var r = new receiver(options, this);
     this.receivers.push(r);
@@ -129,7 +144,9 @@ class dmxnet {
     return r;
   }
 
-  // ArtPollReply
+  /**
+   * Builds and sends an ArtPollReply-Packet
+   */
   ArtPollReply() {
     log.debug('Send ArtPollReply');
 
@@ -294,8 +311,16 @@ class dmxnet {
   }
 }
 
-// declare sender with user options and inherited parent object
+/**
+ * Class representing a sender
+ */
 class sender {
+  /**
+   * Creates a new sender, usually called trough factory in dmxnet
+   *
+   * @param {object} opt - Options for the sender
+   * @param {dmxnet} parent - Instance of the dmxnet parent
+   */
   constructor(opt, parent) {
     // save parent object
     this.parent = parent;
@@ -365,7 +390,9 @@ class sender {
     }, this.base_refresh_interval);
   }
 
-  // Transmit function
+  /**
+   * Transmits the current values
+   */
   transmit() {
     // Only transmit if socket is ready
     if (this.socket_ready) {
@@ -394,7 +421,12 @@ class sender {
     }
   }
 
-  // SetChannel function
+  /**
+   * Sets a single channel to a value and transmits the change
+   *
+   * @param {number} channel - channel (0-511)
+   * @param {number} value - value (0-255)
+   */
   setChannel(channel, value) {
     if ((channel > 511) || (channel < 0)) {
       throw new Error('Channel must be between 0 and 512');
@@ -406,7 +438,13 @@ class sender {
     this.transmit();
   }
 
-  // PrepChannel function
+
+  /**
+   * Prepares a single channel (without transmitting)
+   *
+   * @param {number} channel - channel (0-511)
+   * @param {number} value - value (0-255)
+   */
   prepChannel(channel, value) {
     if ((channel > 511) || (channel < 0)) {
       throw new Error('Channel must be between 0 and 512');
@@ -417,7 +455,13 @@ class sender {
     this.values[channel] = value;
   }
 
-  // Fill Channels
+  /**
+   * Fills channel block with a value and transmits the change
+   *
+   * @param {number} start - start of the block
+   * @param {number} stop - end of the block (inclusive)
+   * @param {number} value - value
+   */
   fillChannels(start, stop, value) {
     if ((start > 511) || (start < 0)) {
       throw new Error('Channel must be between 0 and 512');
@@ -434,7 +478,9 @@ class sender {
     this.transmit();
   }
 
-  // Reset function
+  /**
+   * Resets all channels to zero and Transmits
+   */
   reset() {
     // Reset all 512 channels of the sender to zero
     for (var i = 0; i < 512; i++) {
@@ -443,7 +489,9 @@ class sender {
     this.transmit();
   }
 
-  // Stop sender
+  /**
+   * Stops the sender and destroys it
+   */
   stop() {
     clearInterval(this.interval);
     this.parent.senders = this.parent.senders.filter(function(value) {
@@ -456,6 +504,12 @@ class sender {
   }
 }
 // ToDo: Improve method
+/**
+ * Checks if IPv4 address given is a broadcast address - only used internally
+ *
+ * @param {string} ipaddress - IP address to check
+ * @returns {boolean} - result, true: broadcast
+ */
 function isBroadcast(ipaddress) {
   var oct = ipaddress.split('.');
   if (oct.length !== 4) {
@@ -472,8 +526,16 @@ function isBroadcast(ipaddress) {
   return false;
 }
 
-// Receiver
+/**
+ *  Object representing a receiver-instance
+ */
 class receiver extends EventEmitter {
+  /**
+   * Creates a new receiver, usually called trough factory in dmxnet
+   *
+   * @param {object} opt - Options for the receiver
+   * @param {dmxnet} parent - Instance of the dmxnet parent
+   */
   constructor(opt, parent) {
     super();
     // save parent object
@@ -519,7 +581,11 @@ class receiver extends EventEmitter {
     parent.receiversSubUni[this.subuninet] = this;
   }
 
-  // Handle received packets
+  /**
+   * Handles received data
+   *
+   * @param {Array} data - Data from received ArtDMX
+   */
   receive(data) {
     this.values = data;
     this.emit('data', data);
