@@ -11,3 +11,12 @@ install:
 script:
   - npm run-script lint
   - npm test
+  - npm run jsdoc
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  keep_history: true
+  local_dir: jsdoc
+  on:
+    branch: master
