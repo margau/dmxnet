@@ -1,12 +1,23 @@
 {
   "extends": [
     "eslint:recommended",
-    "plugin:node/recommended"
+    "plugin:node/recommended",
+    "plugin:jsdoc/recommended"
   ],
   "parserOptions": {
     "ecmaVersion": 6
   },
   "rules": {
-    "new-cap": 0
-  }
+    "new-cap": 0,
+    "jsdoc/require-jsdoc": ["warn", {
+      "require": {
+        "ClassDeclaration": true,
+        "MethodDefinition": true
+      }
+    }]
+  },
+  "plugins": [
+    "jsdoc",
+    "node"
+  ]
 }

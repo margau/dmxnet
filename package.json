@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",
     "lint": "eslint --ignore-path .gitignore .",
-    "lintfix": "eslint --ignore-path .gitignore --fix ."
+    "lintfix": "eslint --ignore-path .gitignore --fix .",
+    "jsdoc": "jsdoc lib.js -d jsdoc"
   },
   "repository": {
     "type": "git",
@@ -31,6 +32,8 @@
   },
   "devDependencies": {
     "eslint": "^5.16.0",
-    "eslint-plugin-node": "^10.0.0"
+    "eslint-plugin-jsdoc": "^15.9.10",
+    "eslint-plugin-node": "^10.0.0",
+    "jsdoc": "^3.6.3"
   }
 }
