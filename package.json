@@ -5,7 +5,7 @@
   "main": "lib.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",
-    "lint": "eslint --ignore-path .gitignore .",
+    "lint": "eslint --ignore-path .gitignore . --max-warnings 0",
     "lintfix": "eslint --ignore-path .gitignore --fix .",
     "jsdoc": "jsdoc lib.js -d jsdoc"
   },
