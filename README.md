@@ -83,7 +83,8 @@ Options:
   verbose: 1, //Verbosity, default 0
   oem: 0, //OEM Code from artisticlicense, default to dmxnet OEM.
   sName: "Text", // 17 char long node description, default to "dmxnet"
-  lName: "Long description" // 63 char long node description, default to "dmxnet - OpenSource ArtNet Transceiver"
+  lName: "Long description", // 63 char long node description, default to "dmxnet - OpenSource ArtNet Transceiver"
+  log: {name: 'dmxnet', files: false} // Logging Options, see https://www.npmjs.com/package/@hibas123/nodelogging#setup
 }
 ```
 
