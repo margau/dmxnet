@@ -615,7 +615,7 @@ var dataParser = function(msg, rinfo, parent) {
       log.debug('detected ArtDMX');
       var universe = parseInt(jspack.Unpack('H', msg, 14), 10);
       var data = [];
-      for (var ch = 1; ch < msg.length - 18; ch++) {
+      for (var ch = 1; ch <= msg.length - 18; ch++) {
         data.push(msg.readUInt8(ch + 17, true));
       }
       log.debug('Received frame for SubUniNet 0x' + universe.toString(16));
