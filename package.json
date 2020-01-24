@@ -1,6 +1,6 @@
 {
   "name": "dmxnet",
-  "version": "0.4.1",
+  "version": "0.4.0",
   "description": "ArtNet-DMX-sender and receiver for nodejs",
   "main": "lib.js",
   "scripts": {
@@ -26,13 +26,13 @@
   },
   "homepage": "https://github.com/margau/dmxnet#readme",
   "dependencies": {
-    "@hibas123/nodelogging": "^2.0.6",
+    "@hibas123/nodelogging": "^2.1.2",
     "jspack": "0.0.4",
     "netmask": "^1.0.6"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
-    "eslint-plugin-jsdoc": "^15.9.10",
+    "eslint-plugin-jsdoc": "^15.12.2",
     "eslint-plugin-node": "^10.0.0",
     "jsdoc": "^3.6.3"
   }
