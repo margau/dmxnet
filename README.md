@@ -24,6 +24,9 @@ currently under heavy development!
 See https://github.com/margau/dmxnet/graphs/contributors
 
 ## Changelog
+**v0.4.1**
+Fix #20: Receiver only receiving 511 channels
+
 **v0.4.0**
 Added support for receiving ArtDMX packets.
 
