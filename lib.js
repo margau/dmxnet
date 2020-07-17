@@ -32,6 +32,7 @@ class dmxnet {
     this.sName = options.sName || 'dmxnet'; // Shortname
     this.lName = options.lName ||
       'dmxnet - OpenSource ArtNet Transceiver'; // Longname
+    this.hosts = options.hosts || []
     // Set log levels
     if (this.verbose > 0) {
       // ToDo: Set Log Level
@@ -53,12 +54,14 @@ class dmxnet {
       this.interfaces[key].forEach((val) => {
         if (val.family === 'IPv4') {
           var netmask = new Netmask(val.cidr);
-          this.ip4.push({
-            ip: val.address,
-            netmask: val.netmask,
-            mac: val.mac,
-            broadcast: netmask.broadcast,
-          });
+          if (this.hosts.length === 0 || (this.hosts.indexOf(val.address) !== -1)) {
+            this.ip4.push({
+              ip: val.address,
+              netmask: val.netmask,
+              mac: val.mac,
+              broadcast: netmask.broadcast,
+            });
+          }
         }
       });
     });
@@ -86,7 +89,7 @@ class dmxnet {
     // ToDo: IPv6
     // ToDo: Multicast
     // Catch Socket errors
-    this.listener4.on('error', function(err) {
+    this.listener4.on('error', function (err) {
       throw new Error('Socket error: ', err);
     });
     // Register listening object
@@ -494,7 +497,7 @@ class sender {
    */
   stop() {
     clearInterval(this.interval);
-    this.parent.senders = this.parent.senders.filter(function(value) {
+    this.parent.senders = this.parent.senders.filter(function (value) {
       if (value === this) {
         return false;
       }
@@ -593,7 +596,7 @@ class receiver extends EventEmitter {
 }
 
 // Parser & receiver
-var dataParser = function(msg, rinfo, parent) {
+var dataParser = function (msg, rinfo, parent) {
   log.debug(`got UDP from ${rinfo.address}:${rinfo.port}`);
   if (rinfo.size < 10) {
     log.debug('Payload to short');
