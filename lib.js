@@ -8,9 +8,7 @@ const Netmask = require('netmask').Netmask;
 // Require Logging
 const LoggingBase = require('@hibas123/nodelogging').LoggingBase;
 // Init Logger
-const log = new LoggingBase({
-  name: 'dmxnet',
-});
+let log;
 
 // ArtDMX Header for jspack
 var ArtDmxHeaderFormat = '!7sBHHBBBBH';
@@ -32,6 +30,7 @@ class dmxnet {
     this.sName = options.sName || 'dmxnet'; // Shortname
     this.lName = options.lName ||
       'dmxnet - OpenSource ArtNet Transceiver'; // Longname
+    this.logOptions = options.log || {name: 'dmxnet'};
     // Set log levels
     if (this.verbose > 0) {
       // ToDo: Set Log Level
@@ -41,6 +40,8 @@ class dmxnet {
     } else {
       // ToDo: Set Log Level
     }
+    // Create Logger
+    log = new LoggingBase(this.logOptions);
     // Log started information
     log.log('started with options ' + JSON.stringify(options));
 

@@ -4,6 +4,10 @@ var dmxlib = require('./lib.js');
 // Create new dmxnet instance
 var dmxnet = new dmxlib.dmxnet({
   verbose: 1,
+  log: {
+    files: false,
+    name: "dmxnet"
+  }
 });
 // Create new Sender instance
 var sender = dmxnet.newSender({
