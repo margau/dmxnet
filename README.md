@@ -24,6 +24,9 @@ currently under heavy development!
 See https://github.com/margau/dmxnet/graphs/contributors
 
 ## Changelog
+**v0.5.0**
+Dependency Updates, add hosts option (thanks to @gaelhuot)
+
 **v0.4.0**
 Added support for receiving ArtDMX packets.
 
