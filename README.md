@@ -24,6 +24,9 @@ currently under heavy development!
 See https://github.com/margau/dmxnet/graphs/contributors
 
 ## Changelog
+**v0.6.0**
+Add typescript definitions (thanks to @she11sh0cked)
+
 **v0.5.0**
 Dependency Updates, add hosts option (thanks to @gaelhuot)
 
