@@ -33,12 +33,7 @@ var EventEmitter = require('events');
 var jspack = require('jspack').jspack;
 const os = require('os');
 const Netmask = require('netmask').Netmask;
-// Require Logging
-const LoggingBase = require('@hibas123/nodelogging').LoggingBase;
-// Init Logger
-const log = new LoggingBase({
-  name: 'dmxnet',
-});
+const winston = require('winston');
 
 // ArtDMX Header for jspack
 var ArtDmxHeaderFormat = '!7sBHHBBBBH';
@@ -54,24 +49,33 @@ class dmxnet {
    */
   constructor(options) {
     // Parse all options and set defaults
-    this.verbose = options.verbose || 0;
     this.oem = options.oem || 0x2908; // OEM code hex
     this.port = options.listen || 6454; // Port listening for incoming data
     this.sName = options.sName || 'dmxnet'; // Shortname
     this.lName = options.lName ||
       'dmxnet - OpenSource ArtNet Transceiver'; // Longname
-    this.hosts = options.hosts || []
-    // Set log levels
-    if (this.verbose > 0) {
-      // ToDo: Set Log Level
-      if (this.verbose > 1) {
-        // ToDo: Set Log Level Debug
-      }
-    } else {
-      // ToDo: Set Log Level
-    }
+
+    // Init Logger
+    this.logOptions = Object.assign(
+      {
+        level: 'info',
+        format: winston.format.combine(
+          winston.format.splat(),
+          winston.format.timestamp(),
+          winston.format.label({ label: 'dmxnet' }),
+          winston.format.printf(({ level, message, label, timestamp }) => {
+            return `${timestamp} [${label}] ${level}: ${message}`;
+          })
+        ),
+        transports: [new winston.transports.Console()]
+      },
+      options.log
+    );
+    this.logger = new winston.createLogger(this.logOptions);
+
+    this.hosts = options.hosts || [];
     // Log started information
-    log.log('started with options ' + JSON.stringify(options));
+    this.logger.info('started with options: %o', options);
 
     // Get all network interfaces
     this.interfaces = os.networkInterfaces();
@@ -93,7 +97,7 @@ class dmxnet {
         }
       });
     });
-    log.debug('Interfaces: ' + JSON.stringify(this.ip4));
+    this.logger.verbose('Interfaces: %o', this.ip4);
     // init artPollReplyCount
     this.artPollReplyCount = 0;
     // Array containing reference to foreign controllers
@@ -126,7 +130,7 @@ class dmxnet {
     });
     // Start listening
     this.listener4.bind(this.port);
-    log.log('Listening on port ' + this.port);
+    this.logger.info('Listening on port ' + this.port);
     // Open Socket for sending broadcast data
     this.socket = dgram.createSocket('udp4');
     this.socket.bind(() => {
@@ -136,7 +140,7 @@ class dmxnet {
     // Periodically check Controllers
     setInterval(() => {
       if (this.controllers) {
-        log.debug('Check controller alive, count ' + this.controllers.length);
+        this.logger.verbose('Check controller alive, count ' + this.controllers.length);
         for (var index = 0; index &lt; this.controllers.length; index++) {
           if ((new Date().getTime() -
               new Date(this.controllers[index].last_poll).getTime()) >
@@ -179,7 +183,7 @@ class dmxnet {
    * Builds and sends an ArtPollReply-Packet
    */
   ArtPollReply() {
-    log.debug('Send ArtPollReply');
+    this.logger.silly('Send ArtPollReply');
 
     this.ip4.forEach((ip) => {
       // BindIndex handles all the different "instance".
@@ -238,7 +242,7 @@ class dmxnet {
         client.send(udppacket, 0, udppacket.length, 6454, broadcastip,
           (err) => {
             if (err) throw err;
-            log.log('ArtPollReply frame sent');
+            this.logger.debug('ArtPollReply frame sent');
           });
       });
       // Send one package for every receiver
@@ -287,7 +291,7 @@ class dmxnet {
         client.send(udppacket, 0, udppacket.length, 6454, broadcastip,
           (err) => {
             if (err) throw err;
-            log.log('ArtPollReply frame sent');
+            this.logger.debug('ArtPollReply frame sent');
           });
       });
       if ((this.senders.length + this.receivers.length) &lt; 1) {
@@ -325,13 +329,13 @@ class dmxnet {
             // BindIndex, Status2
             1, 0b00001110,
           ]));
-        log.debug('Packet content: ' + udppacket.toString('hex'));
+        this.logger.debug('Packet content: ' + udppacket.toString('hex'));
         // Send UDP
         var client = this.socket;
         client.send(udppacket, 0, udppacket.length, 6454, broadcastip,
           (err) => {
             if (err) throw err;
-            log.log('ArtPollReply frame sent');
+            this.logger.debug('ArtPollReply frame sent');
           });
       }
     });
@@ -365,7 +369,6 @@ class sender {
     this.subuni = options.subuni;
     this.ip = options.ip || '255.255.255.255';
     this.port = options.port || 6454;
-    this.verbose = this.parent.verbose;
     this.base_refresh_interval = options.base_refresh_interval || 1000;
 
     // Validate Input
@@ -381,10 +384,7 @@ class sender {
     if ((this.net &lt; 0) || (this.subnet &lt; 0) || (this.universe &lt; 0)) {
       throw new Error('Subnet, Net or Universe must be 0 or bigger!');
     }
-    if (this.verbose > 0) {
-      log.log('new dmxnet sender started with params: ' +
-        JSON.stringify(options));
-    }
+    this.parent.logger.info('new dmxnet sender started with params: %o', options);
     // init dmx-value array
     this.values = [];
     // fill all 512 channels
@@ -441,13 +441,13 @@ class sender {
       // Increase Sequence Counter
       this.ArtDmxSeq++;
 
-      log.debug('Packet content: ' + udppacket.toString('hex'));
+      this.parent.logger.debug('Packet content: ' + udppacket.toString('hex'));
       // Send UDP
       var client = this.socket;
       client.send(udppacket, 0, udppacket.length, this.port, this.ip,
         (err) => {
           if (err) throw err;
-          log.log('ArtDMX frame sent to ' + this.ip + ':' + this.port);
+          this.parent.logger.silly('ArtDMX frame sent to ' + this.ip + ':' + this.port);
         });
     }
   }
@@ -578,7 +578,6 @@ class receiver extends EventEmitter {
     this.subnet = options.subnet || 0;
     this.universe = options.universe || 0;
     this.subuni = options.subuni;
-    this.verbose = this.parent.verbose;
 
     // Validate Input
     if (this.net > 127) {
@@ -593,10 +592,7 @@ class receiver extends EventEmitter {
     if ((this.net &lt; 0) || (this.subnet &lt; 0) || (this.universe &lt; 0)) {
       throw new Error('Subnet, Net or Universe must be 0 or bigger!');
     }
-    if (this.verbose > 0) {
-      log.log('new dmxnet sender started with params: ' +
-        JSON.stringify(options));
-    }
+    this.parent.logger.info('new dmxnet sender started with params %o', options);
     // init dmx-value array
     this.values = [];
     // fill all 512 channels
@@ -624,47 +620,52 @@ class receiver extends EventEmitter {
 }
 
 // Parser &amp; receiver
+/**
+ * @param {Buffer} msg - Message buffer to parse
+ * @param {dgram.RemoteInfo} rinfo - Remote info
+ * @param {dmxnet} parent - Instance of the dmxnet parent
+ */
 var dataParser = function (msg, rinfo, parent) {
-  log.debug(`got UDP from ${rinfo.address}:${rinfo.port}`);
+  parent.logger.silly(`got UDP from ${rinfo.address}:${rinfo.port}`);
   if (rinfo.size &lt; 10) {
-    log.debug('Payload to short');
+    parent.logger.silly('Payload to short');
     return;
   }
   // Check first 8 bytes for the "Art-Net" - String
   if (String(jspack.Unpack('!8s', msg)) !== 'Art-Net\u0000') {
-    log.debug('Invalid header');
+    parent.logger.silly('Invalid header');
     return;
   }
   var opcode = parseInt(jspack.Unpack('B', msg, 8), 10);
   opcode += parseInt(jspack.Unpack('B', msg, 9), 10) * 256;
   if (!opcode || opcode === 0) {
-    log.debug('Invalid OpCode');
+    parent.logger.silly('Invalid OpCode');
     return;
   }
   switch (opcode) {
     case 0x5000:
-      log.debug('detected ArtDMX');
+      parent.logger.debug('detected ArtDMX');
       var universe = parseInt(jspack.Unpack('H', msg, 14), 10);
       var data = [];
       for (var ch = 1; ch &lt;= msg.length - 18; ch++) {
         data.push(msg.readUInt8(ch + 17, true));
       }
-      log.debug('Received frame for SubUniNet 0x' + universe.toString(16));
+      parent.logger.debug('Received frame for SubUniNet 0x' + universe.toString(16));
       if (parent.receiversSubUni[universe]) {
         parent.receiversSubUni[universe].receive(data);
       }
       break;
     case 0x2000:
       if (rinfo.size &lt; 14) {
-        log.debug('ArtPoll to small');
+        parent.logger.silly('ArtPoll to small');
         return;
       }
-      log.debug('detected ArtPoll');
+      parent.logger.debug('detected ArtPoll');
       // Parse Protocol version
       var proto = parseInt(jspack.Unpack('B', msg, 10), 10);
       proto += parseInt(jspack.Unpack('B', msg, 11), 10) * 256;
       if (!proto || proto &lt; 14) {
-        log.debug('Invalid OpCode');
+        parent.logger.silly('Invalid OpCode');
         return;
       }
       // Parse TalkToMe
@@ -692,21 +693,22 @@ var dataParser = function (msg, rinfo, parent) {
         parent.controllers.push(ctrl);
       }
       parent.ArtPollReply();
-      log.debug('Controllers: ' + JSON.stringify(parent.controllers));
+      parent.logger.debug('Controllers: %o', parent.controllers);
       break;
     case 0x2100:
       // ToDo
-      log.debug('detected ArtPollReply');
+      parent.logger.debug('detected ArtPollReply');
       break;
     default:
-      log.debug('OpCode not implemented');
+      parent.logger.silly('OpCode not implemented');
   }
 
 };
 // Export dmxnet
 module.exports = {
   dmxnet,
-};</code></pre>
+};
+</code></pre>
         </article>
     </section>
 
@@ -716,13 +718,13 @@ module.exports = {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="dmxnet.html">dmxnet</a></li><li><a href="receiver.html">receiver</a></li><li><a href="sender.html">sender</a></li></ul><h3>Global</h3><ul><li><a href="global.html#isBroadcast">isBroadcast</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="dmxnet.html">dmxnet</a></li><li><a href="receiver.html">receiver</a></li><li><a href="sender.html">sender</a></li></ul><h3>Global</h3><ul><li><a href="global.html#dataParser">dataParser</a></li><li><a href="global.html#isBroadcast">isBroadcast</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Nov 11 2020 16:54:59 GMT+0000 (Coordinated Universal Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Sat Feb 20 2021 11:36:03 GMT+0000 (Coordinated Universal Time)
 </footer>
 
 <script> prettyPrint(); </script>
