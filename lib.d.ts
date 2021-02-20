@@ -1,6 +1,7 @@
 import { Socket } from 'dgram'
 import { EventEmitter } from 'events'
 import { NetworkInterfaceInfo } from 'os'
+import { Logger, LoggerOptions } from 'winston'
 
 export interface NetworkInterface {
     ip: NetworkInterfaceInfo['address']
@@ -41,7 +42,6 @@ declare class sender {
     constructor(opt: SenderOptions | undefined, parent: dmxnet)
     parent: dmxnet
     socket_ready: boolean
-    verbose: DmxnetOptions['verbose']
     values: number[]
     ArtDmxSeq: number
     socket: Socket
@@ -103,7 +103,6 @@ declare class receiver extends EventEmitter {
      */
     constructor(opt: ReceiverOptions | undefined, parent: dmxnet)
     parent: dmxnet
-    verbose: DmxnetOptions['verbose']
     values: number[]
     subuninet: number
     /**
@@ -115,7 +114,7 @@ declare class receiver extends EventEmitter {
 }
 
 export interface DmxnetOptions {
-    verbose?: number
+    log?: LoggerOptions
     oem?: number
     listen?: number
     sName?: string
@@ -133,6 +132,7 @@ declare class dmxnet {
      * @param {DmxnetOptions} [options] - Options for the whole instance
      */
     constructor(options?: DmxnetOptions)
+    logger: Logger
     port: DmxnetOptions['listen']
     interfaces: Record<string, NetworkInterfaceInfo[]>
     ip4: NetworkInterface[]
