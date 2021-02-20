@@ -24,6 +24,9 @@ currently under heavy development!
 See https://github.com/margau/dmxnet/graphs/contributors
 
 ## Changelog
+**v0.7.0**
+Improve logging (thanks to @Patrick-Remy)
+
 **v0.6.0**
 Add typescript definitions (thanks to @she11sh0cked)
 
