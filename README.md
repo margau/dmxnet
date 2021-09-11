@@ -24,6 +24,9 @@ currently under heavy development!
 See https://github.com/margau/dmxnet/graphs/contributors
 
 ## Changelog
+**v0.8.0**
+Dependency Updates, constructor improvement (@soimon)
+
 **v0.7.0**
 Improve logging (thanks to @Patrick-Remy)
 
