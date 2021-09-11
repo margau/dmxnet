@@ -19,7 +19,7 @@ class dmxnet {
    *
    * @param {object} options - Options for the whole instance
    */
-  constructor(options) {
+  constructor(options = {}) {
     // Parse all options and set defaults
     this.oem = options.oem || 0x2908; // OEM code hex
     this.port = options.listen || 6454; // Port listening for incoming data
