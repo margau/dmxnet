@@ -43,7 +43,6 @@ Added support for receiving ArtDMX packets.
 Added support for base_refresh_interval, add sender.reset()
 
 **v0.2.0**
-
 Added support for receiving ArtPoll and sending ArtPollReply.
 
 **v0.1.3**
@@ -112,6 +111,10 @@ dmxnet can propagate max. 255 Sender/Receiver-Objects to other nodes.
 This is a limitation based on the internal structure of ArtPollReply-Packages.
 **You can of course use more Sender/Receiver-Objects, but they won't propagate
 trough ArtPoll.**
+
+In this library DMX channel numbering is zero-indexed, so the first DMX channel (usually 1) has number 0 and the 
+last one (usually 512) has number 511. **Please keep this drift in mind!**
+
 ### Transmitting Art-Net
 
 **Create new sender object:**
@@ -139,7 +142,7 @@ Options:
 sender.setChannel(channel,value);
 ```
 
-Sets *channel* (0-511) to *value* (0-255) and transmits the changed values .
+Sets *channel* (0-511) to *value* (0-255) and transmits the changed values.
 
 **Fill Channels**
 
