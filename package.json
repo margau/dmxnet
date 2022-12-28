@@ -1,6 +1,6 @@
 {
   "name": "dmxnet",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "ArtNet-DMX-sender and receiver for nodejs",
   "main": "lib.js",
   "types": "lib.d.ts",
