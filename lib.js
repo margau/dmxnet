@@ -7,6 +7,8 @@ const os = require('os');
 const Netmask = require('netmask').Netmask;
 const winston = require('winston');
 
+const swap16 = (val) => { return ((val & 0xFF) << 8) | ((val >> 8) & 0xFF); };
+
 // ArtDMX Header for jspack
 var ArtDmxHeaderFormat = '!7sBHHBBBBH';
 // ArtDMX Payload for jspack
@@ -22,6 +24,7 @@ class dmxnet {
   constructor(options = {}) {
     // Parse all options and set defaults
     this.oem = options.oem || 0x2908; // OEM code hex
+    this.esta = options.esta || 0x0000; // ESTA code hex
     this.port = options.listen || 6454; // Port listening for incoming data
     this.sName = options.sName || 'dmxnet'; // Shortname
     this.lName = options.lName ||
@@ -180,7 +183,7 @@ class dmxnet {
             // 2 bytes Firmware version, netSwitch, subSwitch, OEM-Code
             0x0001, s.net, s.subnet, this.oem,
             // Ubea, status1, 2 bytes ESTA
-            0, status, 0,
+            0, status, swap16(this.esta),
             // short name (18), long name (63), stateString (63)
             this.sName.substring(0, 16), this.lName.substring(0, 63), stateString,
             // 2 bytes num ports, 4*portTypes
@@ -229,7 +232,7 @@ class dmxnet {
             // 2 bytes Firmware version, netSwitch, subSwitch, OEM-Code
             0x0001, r.net, r.subnet, this.oem,
             // Ubea, status1, 2 bytes ESTA
-            0, status, 0,
+            0, status, swap16(this.esta),
             // short name (18), long name (63), stateString (63)
             this.sName.substring(0, 16), this.lName.substring(0, 63), stateString,
             // 2 bytes num ports, 4*portTypes
@@ -277,7 +280,7 @@ class dmxnet {
             // 2 bytes Firmware version, netSwitch, subSwitch, OEM-Code
             0x0001, netSwitch, subSwitch, this.oem,
             // Ubea, status1, 2 bytes ESTA
-            0, status, 0,
+            0, status, swap16(this.esta),
             // short name (18), long name (63), stateString (63)
             this.sName.substring(0, 16), this.lName.substring(0, 63), stateString,
             // 2 bytes num ports, 4*portTypes
