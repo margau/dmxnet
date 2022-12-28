@@ -24,6 +24,9 @@ currently under heavy development!
 See https://github.com/margau/dmxnet/graphs/contributors
 
 ## Changelog
+**v0.9.0**
+Dependency Updates, added ESTA manufacturer ID (@bannsaenger)
+
 **v0.8.0**
 Dependency Updates, constructor improvement (@soimon)
 
