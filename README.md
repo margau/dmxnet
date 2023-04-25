@@ -103,7 +103,7 @@ Options:
   esta: 0, // ESTA Manufacturer ID from https://tsp.esta.org, default to ESTA/PLASA (0x0000)
   sName: "Text", // 17 char long node description, default to "dmxnet"
   lName: "Long description", // 63 char long node description, default to "dmxnet - OpenSource ArtNet Transceiver"
-  hosts: ["127.0.0.1"] // Interfaces to listen to, all by default
+  hosts: ["127.0.0.1"], // Interfaces to listen to, all by default
   errFunc: function(err) {
                 this.error(`Do some error handling or throw it: ${err.message}, stack: ${err.stack}`);
             }.bind(this) // optional function to handle errors from the library by yourself. If omitted the errors will be thrown by the library
