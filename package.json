@@ -28,13 +28,13 @@
   "homepage": "https://github.com/margau/dmxnet#readme",
   "dependencies": {
     "jspack": "0.0.4",
-    "netmask": "^2.0.1",
-    "winston": "^3.3.3"
+    "netmask": "^2.0.2",
+    "winston": "^3.8.2"
   },
   "devDependencies": {
-    "eslint": "^5.16.0",
-    "eslint-plugin-jsdoc": "^15.12.2",
-    "eslint-plugin-node": "^10.0.0",
-    "jsdoc": "^3.6.6"
+    "eslint": "^8.39.0",
+    "eslint-plugin-jsdoc": "^43.1.1",
+    "eslint-plugin-node": "^11.1.0",
+    "jsdoc": "^4.0.2"
   }
 }
