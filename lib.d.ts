@@ -120,6 +120,7 @@ export interface DmxnetOptions {
     sName?: string
     lName?: string
     hosts?: string[]
+    errFunc?: (err: Error) => void
 }
 
 declare interface dmxnet extends Required<Omit<DmxnetOptions, 'listen'>> { }
