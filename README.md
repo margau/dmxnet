@@ -9,8 +9,9 @@
 [![npm](https://img.shields.io/npm/dt/dmxnet.svg)](https://www.npmjs.com/package/dmxnet)
 [![Travis (.com)](https://img.shields.io/travis/com/margau/dmxnet.svg)](https://travis-ci.com/margau/dmxnet)
 
-dmxnet is an ArtNet-DMX-sender and receiver for nodejs,
-currently under heavy development!
+dmxnet is an ArtNet-DMX-sender and receiver for nodejs
+
+# Warning: This Libary is not really actively maintained from me at the moment. It probably does work, but PRs might take a time, if merged at all. Feel free to fork if you wanna extend and develop it actively.
 
 ## Features
 
