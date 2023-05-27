@@ -567,7 +567,7 @@ class receiver extends EventEmitter {
     if ((this.net < 0) || (this.subnet < 0) || (this.universe < 0)) {
       throw new Error('Subnet, Net or Universe must be 0 or bigger!');
     }
-    this.parent.logger.info('new dmxnet sender started with params %o', options);
+    this.parent.logger.info('new dmxnet receiver started with params %o', options);
     // init dmx-value array
     this.values = [];
     // fill all 512 channels
