@@ -25,7 +25,7 @@ See https://github.com/margau/dmxnet/graphs/contributors
 
 ## Changelog
 **Work in Progress**
-Dependency Updates, redesigned error handling (@bannsaenger)
+Redesigned error handling (@bannsaenger)
 
 **v0.9.0**
 Dependency Updates, added ESTA manufacturer ID (@bannsaenger)
