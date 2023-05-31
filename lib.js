@@ -435,7 +435,7 @@ class sender {
    */
   setChannel(channel, value) {
     if ((channel > 511) || (channel < 0)) {
-      throw new Error('Channel must be between 0 and 512');
+      throw new Error('Channel must be between 0 and 511');
     }
     if ((value > 255) || (value < 0)) {
       throw new Error('Value must be between 0 and 255');
@@ -453,7 +453,7 @@ class sender {
    */
   prepChannel(channel, value) {
     if ((channel > 511) || (channel < 0)) {
-      throw new Error('Channel must be between 0 and 512');
+      throw new Error('Channel must be between 0 and 511');
     }
     if ((value > 255) || (value < 0)) {
       throw new Error('Value must be between 0 and 255');
@@ -464,16 +464,16 @@ class sender {
   /**
    * Fills channel block with a value and transmits the change
    *
-   * @param {number} start - start of the block
+   * @param {number} start - start of the block (inclusive)
    * @param {number} stop - end of the block (inclusive)
    * @param {number} value - value
    */
   fillChannels(start, stop, value) {
     if ((start > 511) || (start < 0)) {
-      throw new Error('Channel must be between 0 and 512');
+      throw new Error('Start channel must be between 0 and 511');
     }
     if ((stop > 511) || (stop < 0)) {
-      throw new Error('Channel must be between 0 and 512');
+      throw new Error('Stop channel must be between 0 and 511');
     }
     if ((value > 255) || (value < 0)) {
       throw new Error('Value must be between 0 and 255');
@@ -485,7 +485,7 @@ class sender {
   }
 
   /**
-   * Resets all channels to zero and Transmits
+   * Resets all channels to zero and transmits the change
    */
   reset() {
     // Reset all 512 channels of the sender to zero
