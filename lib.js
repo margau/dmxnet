@@ -52,6 +52,9 @@ class dmxnet {
     // Log started information
     this.logger.info('started with options: %o', options);
 
+    // error function to call on error to avoid unhandled exeptions e.g. in Node-RED
+    this.errFunc = typeof options.errFunc === 'function' ?  options.errFunc : undefined;
+
     // Get all network interfaces
     this.interfaces = os.networkInterfaces();
     this.ip4 = [];
@@ -88,7 +91,7 @@ class dmxnet {
     // Timestamp of last Art-Poll send
     this.last_poll;
     // Create listener for incoming data
-    if (!Number.isInteger(this.port)) throw new Error('Invalid Port');
+    if (!Number.isInteger(this.port)) this.handleError(new Error('Invalid Port'));
     this.listener4 = dgram.createSocket({
       type: 'udp4',
       reuseAddr: true,
@@ -97,7 +100,7 @@ class dmxnet {
     // ToDo: Multicast
     // Catch Socket errors
     this.listener4.on('error', function (err) {
-      throw new Error('Socket error: ', err);
+      this.handleError(new Error('Socket error: ', err));
     });
     // Register listening object
     this.listener4.on('message', (msg, rinfo) => {
@@ -126,6 +129,21 @@ class dmxnet {
       }
     }, 30000);
     return this;
+  }
+
+  /**
+   * function to handle the errors an throw them or lead to errFunc
+   *
+   * @param {object} err - The error to handle
+   */
+  handleError(err) {
+    if (typeof this.errFunc === 'function') {
+      // give the error to the function and back to the parent object
+      this.errFunc(err);
+    } else {
+      // if none, trow as before
+      throw err;
+    }
   }
 
   /**
@@ -216,7 +234,7 @@ class dmxnet {
         var client = this.socket;
         client.send(udppacket, 0, udppacket.length, 6454, broadcastip,
           (err) => {
-            if (err) throw err;
+            if (err) this.handleError(err);
             this.logger.debug('ArtPollReply frame sent');
           });
       });
@@ -265,7 +283,7 @@ class dmxnet {
         var client = this.socket;
         client.send(udppacket, 0, udppacket.length, 6454, broadcastip,
           (err) => {
-            if (err) throw err;
+            if (err) this.parent.handleError(err);
             this.logger.debug('ArtPollReply frame sent');
           });
       });
@@ -309,7 +327,7 @@ class dmxnet {
         var client = this.socket;
         client.send(udppacket, 0, udppacket.length, 6454, broadcastip,
           (err) => {
-            if (err) throw err;
+            if (err) this.parent.handleError(err);
             this.logger.debug('ArtPollReply frame sent');
           });
       }
@@ -348,16 +366,16 @@ class sender {
 
     // Validate Input
     if (this.net > 127) {
-      throw new Error('Invalid Net, must be smaller than 128');
+      this.handleError(new Error('Invalid Net, must be smaller than 128'));
     }
     if (this.universe > 15) {
-      throw new Error('Invalid Universe, must be smaller than 16');
+      this.handleError(new Error('Invalid Universe, must be smaller than 16'));
     }
     if (this.subnet > 15) {
-      throw new Error('Invalid subnet, must be smaller than 16');
+      this.handleError(new Error('Invalid subnet, must be smaller than 16'));
     }
     if ((this.net < 0) || (this.subnet < 0) || (this.universe < 0)) {
-      throw new Error('Subnet, Net or Universe must be 0 or bigger!');
+      this.handleError(new Error('Subnet, Net or Universe must be 0 or bigger!'));
     }
     this.parent.logger.info('new dmxnet sender started with params: %o', options);
     // init dmx-value array
@@ -421,7 +439,7 @@ class sender {
       var client = this.socket;
       client.send(udppacket, 0, udppacket.length, this.port, this.ip,
         (err) => {
-          if (err) throw err;
+          if (err) this.parent.handleError(err);
           this.parent.logger.silly('ArtDMX frame sent to ' + this.ip + ':' + this.port);
         });
     }
@@ -435,10 +453,10 @@ class sender {
    */
   setChannel(channel, value) {
     if ((channel > 511) || (channel < 0)) {
-      throw new Error('Channel must be between 0 and 512');
+      this.handleError(new Error('Channel must be between 0 and 512'));
     }
     if ((value > 255) || (value < 0)) {
-      throw new Error('Value must be between 0 and 255');
+      this.handleError(new Error('Value must be between 0 and 255'));
     }
     this.values[channel] = value;
     this.transmit();
@@ -453,10 +471,10 @@ class sender {
    */
   prepChannel(channel, value) {
     if ((channel > 511) || (channel < 0)) {
-      throw new Error('Channel must be between 0 and 512');
+      this.handleError(new Error('Channel must be between 0 and 512'));
     }
     if ((value > 255) || (value < 0)) {
-      throw new Error('Value must be between 0 and 255');
+      this.handleError(new Error('Value must be between 0 and 255'));
     }
     this.values[channel] = value;
   }
@@ -470,13 +488,13 @@ class sender {
    */
   fillChannels(start, stop, value) {
     if ((start > 511) || (start < 0)) {
-      throw new Error('Channel must be between 0 and 512');
+      this.handleError(new Error('Channel must be between 0 and 512'));
     }
     if ((stop > 511) || (stop < 0)) {
-      throw new Error('Channel must be between 0 and 512');
+      this.handleError(new Error('Channel must be between 0 and 512'));
     }
     if ((value > 255) || (value < 0)) {
-      throw new Error('Value must be between 0 and 255');
+      this.handleError(new Error('Value must be between 0 and 255'));
     }
     for (var i = start; i <= stop; i++) {
       this.values[i] = value;
@@ -556,16 +574,16 @@ class receiver extends EventEmitter {
 
     // Validate Input
     if (this.net > 127) {
-      throw new Error('Invalid Net, must be smaller than 128');
+      this.parent.handleError( new Error('Invalid Net, must be smaller than 128'));
     }
     if (this.universe > 15) {
-      throw new Error('Invalid Universe, must be smaller than 16');
+      this.parent.handleError(new Error('Invalid Universe, must be smaller than 16'));
     }
     if (this.subnet > 15) {
-      throw new Error('Invalid subnet, must be smaller than 16');
+      this.parent.handleError(new Error('Invalid subnet, must be smaller than 16'));
     }
     if ((this.net < 0) || (this.subnet < 0) || (this.universe < 0)) {
-      throw new Error('Subnet, Net or Universe must be 0 or bigger!');
+      this.parent.handleError(new Error('Subnet, Net or Universe must be 0 or bigger!'));
     }
     this.parent.logger.info('new dmxnet receiver started with params %o', options);
     // init dmx-value array

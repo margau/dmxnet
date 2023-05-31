@@ -116,10 +116,12 @@ declare class receiver extends EventEmitter {
 export interface DmxnetOptions {
     log?: LoggerOptions
     oem?: number
+    esta?: number
     listen?: number
     sName?: string
     lName?: string
     hosts?: string[]
+    errFunc?: (err: Error) => void
 }
 
 declare interface dmxnet extends Required<Omit<DmxnetOptions, 'listen'>> { }
