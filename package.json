@@ -28,8 +28,7 @@
   "homepage": "https://github.com/margau/dmxnet#readme",
   "dependencies": {
     "jspack": "0.0.4",
-    "netmask": "^2.0.1",
-    "winston": "^3.3.3"
+    "netmask": "^2.0.1"
   },
   "devDependencies": {
     "eslint": "^5.16.0",

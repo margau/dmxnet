@@ -1,7 +1,24 @@
 import { Socket } from 'dgram'
 import { EventEmitter } from 'events'
 import { NetworkInterfaceInfo } from 'os'
-import { Logger, LoggerOptions } from 'winston'
+
+/**
+ * Minimal logger interface accepted by dmxnet.
+ * Compatible with pino, winston, bunyan, console, and any custom logger
+ * that implements these five methods.
+ */
+export interface Logger {
+    trace(obj: object, msg?: string, ...args: unknown[]): void
+    trace(msg: string, ...args: unknown[]): void
+    debug(obj: object, msg?: string, ...args: unknown[]): void
+    debug(msg: string, ...args: unknown[]): void
+    info(obj: object, msg?: string, ...args: unknown[]): void
+    info(msg: string, ...args: unknown[]): void
+    warn(obj: object, msg?: string, ...args: unknown[]): void
+    warn(msg: string, ...args: unknown[]): void
+    error(obj: object, msg?: string, ...args: unknown[]): void
+    error(msg: string, ...args: unknown[]): void
+}
 
 export interface NetworkInterface {
     ip: NetworkInterfaceInfo['address']
@@ -114,7 +131,12 @@ declare class receiver extends EventEmitter {
 }
 
 export interface DmxnetOptions {
-    log?: LoggerOptions
+    /**
+     * Optional logger instance. Must implement trace/debug/info/warn/error.
+     * Compatible with pino, winston, bunyan, console, and similar loggers.
+     * If omitted, all logging is suppressed.
+     */
+    logger?: Logger
     oem?: number
     esta?: number
     listen?: number
@@ -134,6 +156,7 @@ declare class dmxnet {
      * @param {DmxnetOptions} [options] - Options for the whole instance
      */
     constructor(options?: DmxnetOptions)
+    /** The active logger instance (no-op if none was provided). */
     logger: Logger
     port: DmxnetOptions['listen']
     interfaces: Record<string, NetworkInterfaceInfo[]>

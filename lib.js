@@ -5,7 +5,6 @@ var EventEmitter = require('events');
 var jspack = require('jspack').jspack;
 const os = require('os');
 const Netmask = require('netmask').Netmask;
-const winston = require('winston');
 
 const swap16 = (val) => { return ((val & 0xFF) << 8) | ((val >> 8) & 0xFF); };
 
@@ -13,6 +12,15 @@ const swap16 = (val) => { return ((val & 0xFF) << 8) | ((val >> 8) & 0xFF); };
 var ArtDmxHeaderFormat = '!7sBHHBBBBH';
 // ArtDMX Payload for jspack
 var ArtDmxPayloadFormat = '512B';
+
+/** No-op logger used when no logger is provided. */
+const noopLogger = {
+  trace: () => {},
+  debug: () => {},
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+};
 
 /** Class representing the core dmxnet structure */
 class dmxnet {
@@ -30,26 +38,10 @@ class dmxnet {
     this.lName = options.lName ||
       'dmxnet - OpenSource ArtNet Transceiver'; // Longname
 
-    // Init Logger
-    this.logOptions = Object.assign(
-      {
-        level: 'info',
-        format: winston.format.combine(
-          winston.format.splat(),
-          winston.format.timestamp(),
-          winston.format.label({ label: 'dmxnet' }),
-          winston.format.printf(({ level, message, label, timestamp }) => {
-            return `${timestamp} [${label}] ${level}: ${message}`;
-          })
-        ),
-        transports: [new winston.transports.Console()]
-      },
-      options.log
-    );
-    this.logger = new winston.createLogger(this.logOptions);
+    // Use provided logger or fall back to no-op.
+    this.logger = options.logger || noopLogger;
 
     this.hosts = options.hosts || [];
-    // Log started information
     this.logger.info('started with options: %o', options);
 
     // error function to call on error to avoid unhandled exeptions e.g. in Node-RED
@@ -75,7 +67,7 @@ class dmxnet {
         }
       });
     });
-    this.logger.verbose('Interfaces: %o', this.ip4);
+    this.logger.debug('Interfaces: %o', this.ip4);
     // init artPollReplyCount
     this.artPollReplyCount = 0;
     // Array containing reference to foreign controllers
@@ -118,7 +110,7 @@ class dmxnet {
     // Periodically check Controllers
     setInterval(() => {
       if (this.controllers) {
-        this.logger.verbose('Check controller alive, count ' + this.controllers.length);
+        this.logger.debug('Check controller alive, count ' + this.controllers.length);
         for (var index = 0; index < this.controllers.length; index++) {
           if ((new Date().getTime() -
               new Date(this.controllers[index].last_poll).getTime()) >
@@ -176,7 +168,7 @@ class dmxnet {
    * Builds and sends an ArtPollReply-Packet
    */
   ArtPollReply() {
-    this.logger.silly('Send ArtPollReply');
+    this.logger.trace('Send ArtPollReply');
 
     this.ip4.forEach((ip) => {
       // BindIndex handles all the different "instance".
@@ -440,7 +432,7 @@ class sender {
       client.send(udppacket, 0, udppacket.length, this.port, this.ip,
         (err) => {
           if (err) this.parent.handleError(err);
-          this.parent.logger.silly('ArtDMX frame sent to ' + this.ip + ':' + this.port);
+          this.parent.logger.trace('ArtDMX frame sent to ' + this.ip + ':' + this.port);
         });
     }
   }
@@ -619,20 +611,20 @@ class receiver extends EventEmitter {
  * @param {dmxnet} parent - Instance of the dmxnet parent
  */
 var dataParser = function (msg, rinfo, parent) {
-  parent.logger.silly(`got UDP from ${rinfo.address}:${rinfo.port}`);
+  parent.logger.trace(`got UDP from ${rinfo.address}:${rinfo.port}`);
   if (rinfo.size < 10) {
-    parent.logger.silly('Payload to short');
+    parent.logger.trace('Payload to short');
     return;
   }
   // Check first 8 bytes for the "Art-Net" - String
   if (String(jspack.Unpack('!8s', msg)) !== 'Art-Net\u0000') {
-    parent.logger.silly('Invalid header');
+    parent.logger.trace('Invalid header');
     return;
   }
   var opcode = parseInt(jspack.Unpack('B', msg, 8), 10);
   opcode += parseInt(jspack.Unpack('B', msg, 9), 10) * 256;
   if (!opcode || opcode === 0) {
-    parent.logger.silly('Invalid OpCode');
+    parent.logger.trace('Invalid OpCode');
     return;
   }
   switch (opcode) {
@@ -650,7 +642,7 @@ var dataParser = function (msg, rinfo, parent) {
       break;
     case 0x2000:
       if (rinfo.size < 14) {
-        parent.logger.silly('ArtPoll to small');
+        parent.logger.trace('ArtPoll to small');
         return;
       }
       parent.logger.debug('detected ArtPoll');
@@ -658,7 +650,7 @@ var dataParser = function (msg, rinfo, parent) {
       var proto = parseInt(jspack.Unpack('B', msg, 10), 10);
       proto += parseInt(jspack.Unpack('B', msg, 11), 10) * 256;
       if (!proto || proto < 14) {
-        parent.logger.silly('Invalid OpCode');
+        parent.logger.trace('Invalid OpCode');
         return;
       }
       // Parse TalkToMe
@@ -693,7 +685,7 @@ var dataParser = function (msg, rinfo, parent) {
       parent.logger.debug('detected ArtPollReply');
       break;
     default:
-      parent.logger.silly('OpCode not implemented');
+      parent.logger.trace('OpCode not implemented');
   }
 
 };
